@@ -16,22 +16,14 @@ function analyzeDigitalFootprint(string $email, string $username): array
     }
 
     $platforms = [
-        "GitHub" => "https://github.com/" . urlencode($username),
-        "Reddit" => "https://www.reddit.com/user/" . urlencode($username),
-        "TikTok" => "https://www.tiktok.com/@" . urlencode($username),
+        "GitHub"      => "https://github.com/" . urlencode($username),
+        "TikTok"      => "https://www.tiktok.com/" . urlencode($username),
+        "Instagram"   => "https://www.instagram.com/" . urlencode($username),
+        "X / Twitter" => "https://x.com/" . urlencode($username),
+        "Twitch"      => "https://www.twitch.tv/" . urlencode($username),
+        "Spotify"     => "https://open.spotify.com/user/" . urlencode($username)
     ];
 
-    $found = 0;
-
-    foreach ($platforms as $platform => $url) {
-
-        if (checkUrl($url)) {
-            $found++;
-            $signals[] = "Profil istnieje: {$platform}";
-        }
-    }
-
-    $risk += $found * 10;
 
     if (!empty(fetchIntelX($email))) {
         $signals[] = "Wzmianki w indeksach OSINT";

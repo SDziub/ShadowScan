@@ -15,7 +15,8 @@ function scanAccounts(string $email, string $username): array
         "TikTok"      => "https://www.tiktok.com/@%s",
         "Instagram"   => "https://www.instagram.com/%s",
         "X / Twitter" => "https://x.com/%s",
-        "Twitch"      => "https://www.twitch.tv/%s"
+        "Twitch"      => "https://www.twitch.tv/%s",
+        "Spotify"     => "https://open.spotify.com/user/%s"
     ];
 
     $results = [];

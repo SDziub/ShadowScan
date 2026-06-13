@@ -147,21 +147,25 @@ $footprint = analyzeDigitalFootprint(
 
             <?php endif; ?>
 
-            <div class="audit-card">
+        <div class="audit-card">
 
-                <h2>Digital footprint & tracking</h2>
+            <h2>Ślad cyfrowy i OSINT</h2>
 
-                <p>
-                    <strong>Ryzyko śledzenia:</strong>
+            <p>
+                <?php
+                $intel = fetchIntelX($email);
 
-                    <?= htmlspecialchars(
-                        (string) ($footprint['risk'] ?? 0),
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>/100
-                </p>
+                if (!empty($intel)) {
+                    $signal = "Wzmianki w indeksach OSINT";
+                } else {
+                    $signal = "Brak wzmianek w indeksach OSINT";
+                }
 
-            </div>
+                echo htmlspecialchars($signal, ENT_QUOTES, 'UTF-8');
+                ?>
+            </p>
+
+        </div>
 
 
             <div class="audit-card">

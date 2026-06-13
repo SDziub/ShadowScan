@@ -4,10 +4,7 @@ function normalizeProfileText(string $text): string
 {
     $text = strtolower($text);
 
-    // Zamiana znaków rozdzielających na spacje
     $text = preg_replace('/[_\-.0-9]+/', ' ', $text);
-
-    // Usunięcie pozostałych znaków specjalnych
     $text = preg_replace('/[^a-ząćęłńóśźż ]/u', '', $text);
 
     return trim($text);

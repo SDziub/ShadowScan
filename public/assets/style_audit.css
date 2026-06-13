@@ -26,6 +26,8 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
+    overflow: hidden;
+
 }
 
 body::before {
@@ -78,9 +80,9 @@ a:hover {
 }
 
 .left-panel {
-    flex: .9;
-    padding: 80px;
-    padding-top: 60px;
+    flex: 1;
+    padding: 40px;
+    padding-top: 40px;
     border-right: 1px solid var(--left-colour);
     display: flex;
     flex-direction: column;
@@ -96,23 +98,41 @@ a:hover {
 }
 
 .left-panel p {
-    line-height: 1.55;
-    margin-bottom: 8px;
+    line-height: 1.3;
+    margin-bottom: 2px;
 }
 
 .left-panel li {
-    line-height: 1.45;
-    margin-bottom: 4px;
+    line-height: 1.25;
+    margin-bottom: 2px;
 }
 
-.left-panel h2 {
-    margin-top: 35px;
-    margin-bottom: 20px;
+.left-panel h2,
+.right-panel h2 {
+    position: relative;
+    margin-top: 18px;
+    padding-top: 12px;
+}
+
+.left-panel h2::before,
+.right-panel h2::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(255,255,255,.28);
+    box-shadow: 0 0 8px rgba(255,255,255,.15);
+}
+
+.left-panel h1 + h2::before {
+    display: none;
 }
 
 .audit-card {
-    margin: 20px 0;
-    padding: 20px 0;
+    margin: 10px 0;
+    padding: 10px 0;
 
     border-top: 1px solid rgba(255,255,255,.08);
 }
@@ -120,13 +140,14 @@ a:hover {
 .audit-card:first-child {
     border-top: none;
 }
+
 .right-panel {
-    flex: 1.1;
+    flex: 1;
     background: var(--right-background);
-    padding: 80px;
+    padding: 40px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .right-panel .content {
@@ -134,14 +155,13 @@ a:hover {
 }
 
 .right-panel p {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: 10px;
+    line-height: 1.35;
+    margin-bottom: 8px;
 }
 
 .right-panel li {
-    line-height: 1.4;
-    margin-bottom: 4px;
+    line-height: 1.3;
+    margin-bottom: 3px;
 }
 
 .right-panel h3 {
@@ -154,11 +174,12 @@ a:hover {
     font-weight: 700;
     color: var(--h1-colour);
     width: 10ch;
-    overflow: hidden;
+
     white-space: nowrap;
     border-right: 3px solid var(--text-colour);
     text-shadow: 0 0 8px rgba(255,255,255,.15);
     animation: typing-title 1.5s steps(10), blink-cursor .8s infinite;
+    padding-bottom: 5px;
 }
 
 .typing-heading {
@@ -195,25 +216,8 @@ label {
     color: var(--note-colour);
 }
 
-.right-panel h3 {
-    font-size: 1.5rem;
-    margin: 35px 0 15px;
-    color: var(--h1-colour);
-}
-
-.right-panel p {
-    font-size: 1.05rem;
-    line-height: 1.9;
-    margin-bottom: 25px;
-}
-
 .right-panel ul {
     margin-left: 25px;
-}
-
-.right-panel li {
-    line-height: 1.8;
-    margin-bottom: 10px;
 }
 
 .note {
@@ -314,16 +318,17 @@ label {
 }
 
 .profile-item {
-    padding: 18px;
-
-    border: 1px solid rgba(255,255,255,.1);
+    position: relative;
+    border: 1px solid rgba(255,255,255,.12);
     background: rgba(255,255,255,.03);
+        margin-top: 20px;
+        padding: 18px;
+}
 
-    min-height: 120px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+.profiles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
 }
 
 .profile-item strong {

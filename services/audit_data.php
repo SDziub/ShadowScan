@@ -13,31 +13,34 @@ if (!$email || !$username) {
 }
 
 $accountsResult = scanAccounts($email, $username);
-
-foreach ($accountsResult as $account):
 ?>
+<div class="profiles-grid">
 
-<div class="profile-item">
+<?php foreach ($accountsResult as $account): ?>
 
-    <strong><?= htmlspecialchars($account["platform"]) ?></strong>
+    <div class="profile-item">
 
-    <?php if ($account["exists"]): ?>
+        <strong><?= htmlspecialchars($account["platform"]) ?></strong>
 
-        <p>✓ Znaleziono</p>
+        <?php if ($account["exists"]): ?>
 
-        <a
-            href="<?= htmlspecialchars($account["url"]) ?>"
-            target="_blank"
-        >
-            Otwórz profil
-        </a>
+            <p>✓ Znaleziono</p>
 
-    <?php else: ?>
+            <a
+                href="<?= htmlspecialchars($account["url"]) ?>"
+                target="_blank"
+            >
+                Otwórz profil
+            </a>
 
-        <p>✗ Nie znaleziono</p>
+        <?php else: ?>
 
-    <?php endif; ?>
+            <p>✗ Nie znaleziono</p>
 
-</div>
+        <?php endif; ?>
+
+    </div>
 
 <?php endforeach; ?>
+
+</div>
