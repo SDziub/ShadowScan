@@ -108,31 +108,10 @@ $footprint = analyzeDigitalFootprint($email, $username);
     <p><?= $risk['privacyScore'] ?>/100</p>
     <p><?= $risk['level'] ?></p>
 
-<h2>Gdzie znaleziono konta?</h2>
-
-<?php foreach ($accountsResult as $account): ?>
-    <div class="profile-item">
-        <strong><?= htmlspecialchars($account["platform"]) ?></strong>
-
-        <?php if ($account["exists"]): ?>
-            <p>✓ Znaleziono jako: <?= htmlspecialchars($account["foundAs"]) ?></p>
-
-            <a href="<?= htmlspecialchars($account["url"]) ?>" target="_blank">
-                Otwórz profil
-            </a>
-        <?php else: ?>
-            <p>✗ Nie znaleziono</p>
-        <?php endif; ?>
-    </div>
-<?php endforeach; ?>
-
-</section>
-
-<section class="right-panel">
 
     <div class="content">
 
-        <h3 class="typing-heading">Szczegóły audytu</h3>
+        <h3>Szczegóły audytu</h3>
 
         <h3>Wycieki danych</h3>
 
@@ -203,7 +182,31 @@ $footprint = analyzeDigitalFootprint($email, $username);
 
         </div>
 
+            </div>
+</section>
+
+<section class="right-panel">
+
+    <div class="content">
+    <h2 class="typing-heading">Gdzie znaleziono konta?</h2>
+
+<?php foreach ($accountsResult as $account): ?>
+    <div class="profile-item">
+        <strong><?= htmlspecialchars($account["platform"]) ?></strong>
+
+        <?php if ($account["exists"]): ?>
+            <p>✓ Znaleziono </p>
+
+            <a href="<?= htmlspecialchars($account["url"]) ?>" target="_blank">
+                Otwórz profil
+            </a>
+        <?php else: ?>
+            <p>✗ Nie znaleziono</p>
+        <?php endif; ?>
     </div>
+<?php endforeach; ?>
+
+</section>
 
 </section>
 
