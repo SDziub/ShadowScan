@@ -1,10 +1,16 @@
 <?php
 
 require_once "../path.php";
+
+require_once ROOT_PATH . "services/UrlChecker.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
 
 $email = $_POST['email'] ?? '';
 $username = $_POST['username'] ?? '';
+
+if (!$email || !$username) {
+    exit;
+}
 
 $accountsResult = scanAccounts($email, $username);
 
@@ -19,7 +25,10 @@ foreach ($accountsResult as $account):
 
         <p>✓ Znaleziono</p>
 
-        <a href="<?= htmlspecialchars($account["url"]) ?>" target="_blank">
+        <a
+            href="<?= htmlspecialchars($account["url"]) ?>"
+            target="_blank"
+        >
             Otwórz profil
         </a>
 

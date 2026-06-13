@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 require_once "path.php";
 
@@ -17,9 +16,10 @@ if (
 
 require_once ROOT_PATH . "services/EmailScanner.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
-require_once ROOT_PATH . "services/InterestProfiler.php";
 require_once ROOT_PATH . "services/RiskCalculator.php";
 require_once ROOT_PATH . "services/FootprintScanner.php";
+require_once ROOT_PATH . "services/UrlChecker.php";
+require_once ROOT_PATH . "services/InterestProfiler.php";
 
 $emailResult = scanEmail($email);
 
@@ -48,33 +48,22 @@ $footprint = analyzeDigitalFootprint(
 
 <!DOCTYPE html>
 <html lang="pl">
-
 <head>
     <?php require_once ROOT_PATH . "public/includes/head_audit.php"; ?>
-
     <title>Raport - ShadowScan</title>
 </head>
-
 <body>
 
 <div class="container">
 
-    <section class="left-panel">
+<section class="left-panel">
 
-        <h1 class="typing-title">Raport audytu</h1>
+    <h1 class="typing-title">Raport audytu</h1>
 
-        <p>
-            Email:
-            <?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>
-        </p>
+    <p>Email: <?= htmlspecialchars($email) ?></p>
+    <p>Nick: <?= htmlspecialchars($username) ?></p>
 
-        <p>
-            Nick:
-            <?= htmlspecialchars($username, ENT_QUOTES, 'UTF-8') ?>
-        </p>
-
-        <h2>Wynik prywatności</h2>
-
+    <h2>Wynik prywatności</h2>
         <p>
             <?= htmlspecialchars(
                 (string) $risk['privacyScore'],
@@ -91,11 +80,12 @@ $footprint = analyzeDigitalFootprint(
             ) ?>
         </p>
 
-        <div class="content">
 
-            <h3>Szczegóły audytu</h3>
+    <div class="content">
 
-            <h3>Wycieki danych</h3>
+        <h3>Szczegóły audytu</h3>
+
+             <h3>Wycieki danych</h3>
 
             <?php if (!empty($emailResult['breaches'])): ?>
 
@@ -158,7 +148,6 @@ $footprint = analyzeDigitalFootprint(
                 <p>Nie znaleziono znanych wycieków.</p>
 
             <?php endif; ?>
-
 
             <div class="audit-card">
 
@@ -240,79 +229,67 @@ $footprint = analyzeDigitalFootprint(
 
     </section>
 
+<section class="right-panel">
 
-    <section class="right-panel">
+    <div class="content">
 
-        <div class="content">
+        <h2 class="typing-heading">
+            Gdzie znaleziono konta?
+        </h2>
 
-            <h2 class="typing-heading">
-                Gdzie znaleziono konta?
-            </h2>
-
-            <div id="auditResults">
-
-                <?php foreach ($accountsResult as $account): ?>
-
-                    <div class="profile-item">
-
-                        <strong>
-                            <?= htmlspecialchars(
-                                $account['platform'],
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) ?>
-                        </strong>
-
-                        <?php if ($account['exists']): ?>
-
-                            <p>
-                                ✓ Znaleziono
-
-                                <?php if (!empty($account['foundAs'])): ?>
-
-                                    jako:
-                                    <?= htmlspecialchars(
-                                        $account['foundAs'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>
-
-                                <?php endif; ?>
-                            </p>
-
-                            <?php if (!empty($account['url'])): ?>
-
-                                <a
-                                    href="<?= htmlspecialchars(
-                                        $account['url'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Otwórz profil
-                                </a>
-
-                            <?php endif; ?>
-
-                        <?php else: ?>
-
-                            <p>✗ Nie znaleziono</p>
-
-                        <?php endif; ?>
-
-                    </div>
-
-                <?php endforeach; ?>
-
-            </div>
-
+        <div id="auditLoading">
+            Trwa analiza...
         </div>
 
-    </section>
+<div id="auditResults" style="display:none;"></div>
 
+    </div>
+
+</section>
 </div>
 
+<script>
+
+window.addEventListener('load', () => {
+
+    const loading = document.getElementById('auditLoading');
+    const results = document.getElementById('auditResults');
+
+    fetch('services/audit_data.php', {
+
+        method: 'POST',
+
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+
+        body:
+            'email=<?= urlencode($email) ?>' +
+            '&username=<?= urlencode($username) ?>'
+
+    })
+
+    .then(response => response.text())
+
+    .then(html => {
+
+        loading.style.display = 'none';
+
+        results.innerHTML = html;
+
+        results.style.display = 'block';
+
+    })
+
+    .catch(() => {
+
+        loading.innerHTML =
+            'Błąd podczas wykonywania analizy.';
+
+    });
+
+});
+
+</script>
 </body>
 </html>

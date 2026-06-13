@@ -1,24 +1,41 @@
 <?php
 
-function calculateRisk(array $emailResult, array $usernameResult): array
-{
-    $risk = ($emailResult['risk'] ?? 0) + ($usernameResult['risk'] ?? 0);
+function calculateRisk(
+    array $emailResult,
+    array $accountsResult,
+    array $interests
+): array {
+    $risk = $emailResult['risk'] ?? 0;
 
-    $level = "Niskie ryzyko";
+    $foundAccounts = count(
+        array_filter(
+            $accountsResult,
+            function (array $account): bool {
+                return $account['exists'] ?? false;
+            }
+        )
+    );
 
-    if ($risk > 40) {
-        $level = "Srednie ryzyko";
-    }
+    $risk += $foundAccounts * 10;
+    $risk += count($interests) * 5;
 
-    if ($risk > 80) {
+    $risk = min($risk, 100);
+
+    if ($risk <= 40) {
+        $level = "Niskie ryzyko";
+    } elseif ($risk <= 80) {
+        $level = "Średnie ryzyko";
+    } else {
         $level = "Wysokie ryzyko";
     }
 
-    $score = max(0, 100 - $risk);
+    $score = 100 - $risk;
 
     return [
         "privacyScore" => $score,
         "level" => $level,
-        "rawRisk" => $risk
+        "rawRisk" => $risk,
+        "foundAccounts" => $foundAccounts,
+        "interestCount" => count($interests)
     ];
 }
