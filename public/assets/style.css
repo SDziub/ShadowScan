@@ -273,3 +273,60 @@ button:hover {
         transform: translate(0,0);
     }
 }
+
+.scan-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: #00ff9d;
+    font-family: monospace;
+}
+
+.hidden {
+    display: none;
+}
+
+.scan-box {
+    text-align: center;
+    position: relative;
+    padding: 30px;
+    border: 1px solid #00ff9d;
+    box-shadow: 0 0 20px #00ff9d33;
+}
+
+.scan-line {
+    width: 200px;
+    height: 2px;
+    background: #00ff9d;
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: scanMove 1.2s linear infinite;
+    box-shadow: 0 0 10px #00ff9d;
+}
+
+@keyframes scanMove {
+    0%   { top: 0; opacity: 1; }
+    50%  { opacity: 0.4; }
+    100% { top: 100%; opacity: 1; }
+}
+
+.progress-bar {
+    width: 260px;
+    height: 10px;
+    border: 1px solid #00ff9d;
+    margin-top: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 10px #00ff9d33;
+}
+
+#progressFill {
+    height: 100%;
+    width: 0%;
+    background: #00ff9d;
+    transition: width 0.2s linear;
+}
