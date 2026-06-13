@@ -1,0 +1,55 @@
+e-mail
+nazwa użytkownika / nick
+opcjonalnie: kilka słów o sobie albo linki do profili
+
+Wynik prywatności: 68/100
+
+E-mail:
+- znaleziono potencjalne ryzyko wycieku / brak danych
+- rekomendacja: zmień hasło, włącz 2FA
+
+Nick:
+- możliwe wystąpienia w serwisach: GitHub, Reddit, Instagram, TikTok
+- ryzyko powiązania kont: wysokie/średnie/niskie
+
+Profilowanie:
+- prawdopodobne zainteresowania: gry, informatyka, technologia
+- ryzyko targetowania reklam: średnie
+
+Rekomendacje:
+- używaj różnych nicków
+- stosuj aliasy e-mail
+- ogranicz publiczne dane
+
+Frontend: HTML + CSS + JavaScript
+Backend: Php
+API: HaveIBeenPwned / ewentualnie mock, jeśli zabraknie klucza
+Sprawdzanie nicku: proste zapytania do znanych URL-i
+Raport: HTML, później opcjonalnie PDF
+
+hackaton/
+│
+├── api/
+│   └── scan.php
+│
+├── services/
+│   ├── EmailScanner.php
+│   ├── UsernameScanner.php
+│   └── RiskCalculator.php
+│
+├── public/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── style.css
+│   │   │
+│   │   └── js/
+│   │       └── script.js
+│   │
+│   └── includes/
+│       ├── head.php
+│       ├── header.php
+│       └── text.php
+│
+├── index.php
+├── path.php
+└── LICENSE

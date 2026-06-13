@@ -14,8 +14,7 @@ require_once "path.php";
 <div class="container">
 
     <section class="left-panel">
-        <h1 class="terminal-title">ShadowScan</h1>
-        <p class="terminal-subtitle"> digital footprint audit</p>
+        <h1>ShadowScan</h1>
 
         <form id="scanForm">
             <label>Email</label>
@@ -41,9 +40,7 @@ require_once "path.php";
     </section>
 
     <section class="right-panel">
-    <div class="content">
-        <?php include(ROOT_PATH ."public/includes/text.php"); ?>
-    </div>
+    <?php include(ROOT_PATH ."public/includes/text.php"); ?>
     </section>
 
 </div>
