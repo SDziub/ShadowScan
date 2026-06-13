@@ -1,159 +1,316 @@
 <?php
+
 session_start();
 require_once "path.php";
 
-$email = $_POST['email'] ?? '';
-$username = $_POST['username'] ?? '';
+$email = trim($_POST['email'] ?? '');
+$username = trim($_POST['username'] ?? '');
 
-if (empty($email) || empty($username)) {
+if (
+    empty($email) ||
+    empty($username) ||
+    !filter_var($email, FILTER_VALIDATE_EMAIL)
+) {
     header("Location: index.php");
     exit;
 }
 
 require_once ROOT_PATH . "services/EmailScanner.php";
-require_once ROOT_PATH . "services/UsernameScanner.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
+require_once ROOT_PATH . "services/InterestProfiler.php";
 require_once ROOT_PATH . "services/RiskCalculator.php";
 require_once ROOT_PATH . "services/FootprintScanner.php";
 
-$accountsResult = scanAccounts($email, $username);
-
 $emailResult = scanEmail($email);
-$usernameResult = scanUsername($username);
-$risk = calculateRisk($emailResult, $usernameResult);
 
+$accountsResult = scanAccounts(
+    $email,
+    $username
+);
 
-$footprint = analyzeDigitalFootprint($email, $username);
+$interests = analyzeInterests(
+    $email,
+    $username
+);
+
+$risk = calculateRisk(
+    $emailResult,
+    $accountsResult,
+    $interests
+);
+
+$footprint = analyzeDigitalFootprint(
+    $email,
+    $username
+);
+
 ?>
 
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <?php require_once ROOT_PATH . "public/includes/head_audit.php"; ?>
+
     <title>Raport - ShadowScan</title>
 </head>
+
 <body>
 
 <div class="container">
 
-<section class="left-panel">
+    <section class="left-panel">
 
-    <h1 class="typing-title">Raport audytu</h1>
+        <h1 class="typing-title">Raport audytu</h1>
 
-    <p>Email: <?= htmlspecialchars($email) ?></p>
-    <p>Nick: <?= htmlspecialchars($username) ?></p>
+        <p>
+            Email:
+            <?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>
+        </p>
 
-    <h2>Wynik prywatności</h2>
+        <p>
+            Nick:
+            <?= htmlspecialchars($username, ENT_QUOTES, 'UTF-8') ?>
+        </p>
 
-    <p><?= $risk['privacyScore'] ?>/100</p>
-    <p><?= $risk['level'] ?></p>
+        <h2>Wynik prywatności</h2>
 
+        <p>
+            <?= htmlspecialchars(
+                (string) $risk['privacyScore'],
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>/100
+        </p>
 
-    <div class="content">
+        <p>
+            <?= htmlspecialchars(
+                $risk['level'],
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>
+        </p>
 
-        <h3>Szczegóły audytu</h3>
+        <div class="content">
 
-        <h3>Wycieki danych</h3>
+            <h3>Szczegóły audytu</h3>
 
-        <?php if (!empty($emailResult['breaches'])): ?>
+            <h3>Wycieki danych</h3>
 
-            <?php foreach ($emailResult['breaches'] as $breach): ?>
+            <?php if (!empty($emailResult['breaches'])): ?>
 
-                <div class="audit-card">
+                <?php foreach ($emailResult['breaches'] as $breach): ?>
 
-                    <h3>
-                        <?= htmlspecialchars($breach['source']['name'] ?? 'Nieznane źródło') ?>
-                    </h3>
+                    <div class="audit-card">
 
-                    <p>
-                        Data: <?= htmlspecialchars($breach['source']['date'] ?? 'Brak danych') ?>
-                    </p>
+                        <h3>
+                            <?= htmlspecialchars(
+                                $breach['source']['name'] ?? 'Nieznane źródło',
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </h3>
 
-                    <p>
-                        Typ wycieku:
-                        <?= htmlspecialchars($breach['source']['type'] ?? 'Brak danych') ?>
-                    </p>
+                        <p>
+                            Data:
+                            <?= htmlspecialchars(
+                                $breach['source']['date'] ?? 'Brak danych',
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </p>
 
-                    <?php if (!empty($breach['fields'])): ?>
-                        <h4>Ujawnione dane:</h4>
-                        <ul>
-                            <?php foreach ($breach['fields'] as $field): ?>
-                                <li><?= htmlspecialchars($field) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
+                        <p>
+                            Typ wycieku:
+                            <?= htmlspecialchars(
+                                $breach['source']['type'] ?? 'Brak danych',
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </p>
 
-                </div>
+                        <?php if (!empty($breach['fields'])): ?>
 
-            <?php endforeach; ?>
+                            <h4>Ujawnione dane:</h4>
 
-        <?php else: ?>
-            <p>Nie znaleziono znanych wycieków.</p>
-        <?php endif; ?>
+                            <ul>
+                                <?php foreach ($breach['fields'] as $field): ?>
 
-<div class="audit-card">
-    <h3>Digital footprint & tracking</h3>
+                                    <li>
+                                        <?= htmlspecialchars(
+                                            $field,
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>
+                                    </li>
 
-    <p><strong>Ryzyko śledzenia:</strong> <?= $footprint['risk'] ?>/100</p>
+                                <?php endforeach; ?>
+                            </ul>
 
-    <?php if (!empty($footprint['signals'])): ?>
-        <ul>
-            <?php foreach ($footprint['signals'] as $s): ?>
-                <li><?= htmlspecialchars($s) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php else: ?>
-        <p>Brak silnych sygnałów śledzenia.</p>
-    <?php endif; ?>
-</div>
+                        <?php endif; ?>
 
-        <div class="audit-card">
-            <h3>Profilowanie</h3>
+                    </div>
 
-            <?php if (!empty($usernameResult["interests"])): ?>
-                <ul>
-                    <?php foreach ($usernameResult["interests"] as $interest): ?>
-                        <li><?= htmlspecialchars($interest) ?></li>
-                    <?php endforeach; ?>
-                </ul>
+                <?php endforeach; ?>
+
             <?php else: ?>
-                <p>Brak danych o zainteresowaniach.</p>
+
+                <p>Nie znaleziono znanych wycieków.</p>
+
             <?php endif; ?>
+
+
+            <div class="audit-card">
+
+                <h3>Digital footprint & tracking</h3>
+
+                <p>
+                    <strong>Ryzyko śledzenia:</strong>
+
+                    <?= htmlspecialchars(
+                        (string) ($footprint['risk'] ?? 0),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>/100
+                </p>
+
+                <?php if (!empty($footprint['signals'])): ?>
+
+                    <ul>
+                        <?php foreach ($footprint['signals'] as $signal): ?>
+
+                            <li>
+                                <?= htmlspecialchars(
+                                    $signal,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>
+                            </li>
+
+                        <?php endforeach; ?>
+                    </ul>
+
+                <?php else: ?>
+
+                    <p>Brak silnych sygnałów śledzenia.</p>
+
+                <?php endif; ?>
+
+            </div>
+
+
+            <div class="audit-card">
+
+                <h3>Profilowanie</h3>
+
+                <?php if (!empty($interests)): ?>
+
+                    <p>
+                        Na podstawie nazwy użytkownika i adresu e-mail
+                        wykryto możliwe zainteresowania:
+                    </p>
+
+                    <ul>
+                        <?php foreach ($interests as $interest): ?>
+
+                            <li>
+                                <?= htmlspecialchars(
+                                    is_array($interest)
+                                        ? $interest['name']
+                                        : $interest,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>
+                            </li>
+
+                        <?php endforeach; ?>
+                    </ul>
+
+                <?php else: ?>
+
+                    <p>
+                        Nie wykryto jednoznacznych zainteresowań.
+                    </p>
+
+                <?php endif; ?>
+
+            </div>
 
         </div>
 
+    </section>
+
+
+    <section class="right-panel">
+
+        <div class="content">
+
+            <h2 class="typing-heading">
+                Gdzie znaleziono konta?
+            </h2>
+
+            <div id="auditResults">
+
+                <?php foreach ($accountsResult as $account): ?>
+
+                    <div class="profile-item">
+
+                        <strong>
+                            <?= htmlspecialchars(
+                                $account['platform'],
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </strong>
+
+                        <?php if ($account['exists']): ?>
+
+                            <p>
+                                ✓ Znaleziono
+
+                                <?php if (!empty($account['foundAs'])): ?>
+
+                                    jako:
+                                    <?= htmlspecialchars(
+                                        $account['foundAs'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+
+                                <?php endif; ?>
+                            </p>
+
+                            <?php if (!empty($account['url'])): ?>
+
+                                <a
+                                    href="<?= htmlspecialchars(
+                                        $account['url'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Otwórz profil
+                                </a>
+
+                            <?php endif; ?>
+
+                        <?php else: ?>
+
+                            <p>✗ Nie znaleziono</p>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                <?php endforeach; ?>
+
             </div>
-</section>
 
-<section class="right-panel">
+        </div>
 
-    <div class="content">
-    <h2 class="typing-heading">Gdzie znaleziono konta?</h2>
-
-    <div id="auditLoading">
-    Trwa analiza...
-</div>
-
-<div id="auditResults"><?php foreach ($accountsResult as $account): ?>
-    <div class="profile-item">
-        <strong><?= htmlspecialchars($account["platform"]) ?></strong>
-
-        <?php if ($account["exists"]): ?>
-            <p>✓ Znaleziono </p>
-
-            <a href="<?= htmlspecialchars($account["url"]) ?>" target="_blank">
-                Otwórz profil
-            </a>
-        <?php else: ?>
-            <p>✗ Nie znaleziono</p>
-        <?php endif; ?>
-    </div>
-<?php endforeach; ?>
-</div>
-
-
-</section>
-
+    </section>
 
 </div>
 
