@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-
+require_once "path.php";
 require_once "../services/EmailScanner.php";
 require_once "../services/UsernameScanner.php";
 require_once "../services/RiskCalculator.php";
