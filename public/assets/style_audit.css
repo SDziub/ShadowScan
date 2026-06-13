@@ -80,21 +80,29 @@ a:hover {
 .left-panel {
     flex: .9;
     padding: 80px;
+    padding-top: 60px;
     border-right: 1px solid var(--left-colour);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 140px;
+}
+
+.left-panel h2 {
+    margin-top: 25px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid rgba(255,255,255,.12);
 }
 
 .left-panel p {
-    line-height: 2.4;
-    margin-bottom: 18px;
+    line-height: 1.55;
+    margin-bottom: 8px;
 }
 
 .left-panel li {
-    line-height: 2.2;
-    margin-bottom: 12px;
+    line-height: 1.45;
+    margin-bottom: 4px;
 }
 
 .left-panel h2 {
@@ -102,6 +110,16 @@ a:hover {
     margin-bottom: 20px;
 }
 
+.audit-card {
+    margin: 20px 0;
+    padding: 20px 0;
+
+    border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.audit-card:first-child {
+    border-top: none;
+}
 .right-panel {
     flex: 1.1;
     background: var(--right-background);
@@ -288,15 +306,24 @@ label {
 
 #auditResults {
     margin-top: 20px;
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 15px;
 }
 
 .profile-item {
     padding: 18px;
-    margin-bottom: 15px;
 
     border: 1px solid rgba(255,255,255,.1);
-
     background: rgba(255,255,255,.03);
+
+    min-height: 120px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .profile-item strong {

@@ -12,14 +12,10 @@ function scanAccounts(string $email, string $username): array
 
     $platforms = [
         "GitHub"      => "https://github.com/%s",
-        "Reddit"      => "https://www.reddit.com/user/%s",
         "TikTok"      => "https://www.tiktok.com/@%s",
         "Instagram"   => "https://www.instagram.com/%s",
         "X / Twitter" => "https://x.com/%s",
-        "Twitch"      => "https://www.twitch.tv/%s",
-        "Pinterest"   => "https://www.pinterest.com/%s",
-        "GitLab"      => "https://gitlab.com/%s",
-        "Steam"       => "https://steamcommunity.com/id/%s"
+        "Twitch"      => "https://www.twitch.tv/%s"
     ];
 
     $results = [];

@@ -83,9 +83,7 @@ $footprint = analyzeDigitalFootprint(
 
     <div class="content">
 
-        <h3>Szczegóły audytu</h3>
-
-             <h3>Wycieki danych</h3>
+             <h2>Wycieki danych</h2>
 
             <?php if (!empty($emailResult['breaches'])): ?>
 
@@ -151,7 +149,7 @@ $footprint = analyzeDigitalFootprint(
 
             <div class="audit-card">
 
-                <h3>Digital footprint & tracking</h3>
+                <h2>Digital footprint & tracking</h2>
 
                 <p>
                     <strong>Ryzyko śledzenia:</strong>
@@ -163,34 +161,12 @@ $footprint = analyzeDigitalFootprint(
                     ) ?>/100
                 </p>
 
-                <?php if (!empty($footprint['signals'])): ?>
-
-                    <ul>
-                        <?php foreach ($footprint['signals'] as $signal): ?>
-
-                            <li>
-                                <?= htmlspecialchars(
-                                    $signal,
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                ) ?>
-                            </li>
-
-                        <?php endforeach; ?>
-                    </ul>
-
-                <?php else: ?>
-
-                    <p>Brak silnych sygnałów śledzenia.</p>
-
-                <?php endif; ?>
-
             </div>
 
 
             <div class="audit-card">
 
-                <h3>Profilowanie</h3>
+                <h2>Profilowanie</h2>
 
                 <?php if (!empty($interests)): ?>
 
