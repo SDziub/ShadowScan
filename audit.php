@@ -147,38 +147,25 @@ $footprint = analyzeDigitalFootprint(
 
             <?php endif; ?>
 
-        <div class="audit-card">
-
-            <h2>Ślad cyfrowy i OSINT</h2>
-
-            <p>
+                        <p>
                 <?php
                 $intel = fetchIntelX($email);
 
                 if (!empty($intel)) {
-                    $signal = "Wzmianki w indeksach OSINT";
+                    $signal = "Wzmianki w indeksach OSINT.";
                 } else {
-                    $signal = "Brak wzmianek w indeksach OSINT";
+                    $signal = "Brak wzmianek w indeksach OSINT.";
                 }
 
                 echo htmlspecialchars($signal, ENT_QUOTES, 'UTF-8');
                 ?>
             </p>
 
-        </div>
-
-
             <div class="audit-card">
 
                 <h2>Profilowanie</h2>
 
                 <?php if (!empty($interests)): ?>
-
-                    <p>
-                        Na podstawie nazwy użytkownika i adresu e-mail
-                        wykryto możliwe zainteresowania:
-                    </p>
-
                     <ul>
                         <?php foreach ($interests as $interest): ?>
 

@@ -1,56 +1,55 @@
 <?php
-require_once ROOT_PATH . "services/UrlChecker.php";
+
+require_once ROOT_PATH . "services/PlatformChecker.php";
 
 function scanAccounts(string $email, string $username): array
 {
     $emailName = explode("@", $email)[0] ?? '';
 
-    $candidates = array_filter(array_unique([
+    $candidates = array_values(array_unique(array_filter([
         trim($username),
         trim($emailName)
-    ]));
+    ])));
 
     $platforms = [
-        "GitHub"      => "https://github.com/%s",
-        "TikTok"      => "https://www.tiktok.com/@%s",
-        "Instagram"   => "https://www.instagram.com/%s",
+        "GitHub" => "https://github.com/%s",
+        "Reddit" => "https://www.reddit.com/user/%s",
+        "Twitch" => "https://www.twitch.tv/%s",
         "X / Twitter" => "https://x.com/%s",
-        "Twitch"      => "https://www.twitch.tv/%s",
-        "Spotify"     => "https://open.spotify.com/user/%s"
+        "TikTok" => "https://www.tiktok.com/@%s",
+        "Spotify" => "https://open.spotify.com/user/%s"
     ];
 
     $results = [];
 
-    foreach ($platforms as $platform => $urlPattern) {
-        $checked = [];
-        $found = false;
-        $foundUrl = null;
-        $foundAs = null;
+    foreach ($platforms as $platform => $pattern) {
 
-        foreach ($candidates as $candidate) {
-            $url = sprintf($urlPattern, rawurlencode($candidate));
-            $exists = checkUrl($url);
+        $best = [
+            "exists" => false,
+            "confidence" => 0,
+            "url" => null,
+            "foundAs" => null
+        ];
 
-            $checked[] = [
-                "searchedAs" => $candidate,
-                "url" => $url,
-                "exists" => $exists
-            ];
+        foreach ($candidates as $c) {
 
-            if ($exists && !$found) {
-                $found = true;
-                $foundUrl = $url;
-                $foundAs = $candidate;
+            $url = sprintf($pattern, rawurlencode($c));
+
+            $res = checkPlatform($platform, $url, $c);
+
+            if ($res["confidence"] > $best["confidence"]) {
+                $best = [
+                    "exists" => $res["exists"],
+                    "confidence" => $res["confidence"],
+                    "url" => $url,
+                    "foundAs" => $c
+                ];
             }
         }
 
-        $results[] = [
-            "platform" => $platform,
-            "exists" => $found,
-            "foundAs" => $foundAs,
-            "url" => $foundUrl,
-            "checked" => $checked
-        ];
+        $results[] = array_merge([
+            "platform" => $platform
+        ], $best);
     }
 
     return $results;
