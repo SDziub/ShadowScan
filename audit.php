@@ -148,84 +148,75 @@ $security = calculateSecurityStatus(
             </div>
         </article>
 
-
         <article
-            class="security-card"
-            data-level="<?= (int) $security['profiling']['level'] ?>"
-            tabindex="0"
-        >
-            <h3>Możliwość profilowania</h3>
+    class="security-card"
+    data-level="<?= (int) $security['profilingExposure']['level'] ?>"
+    tabindex="0"
+>
+    <h3>Profilowanie i identyfikacja</h3>
 
-            <strong>
-                <?= htmlspecialchars($security['profiling']['status']) ?>
-            </strong>
+    <strong>
+        <?= htmlspecialchars(
+            $security['profilingExposure']['status']
+        ) ?>
+    </strong>
 
-            <div class="status-bar">
-                <span style="width: <?= (int) $security['profiling']['level'] * 25 ?>%"></span>
-            </div>
+    <div class="status-bar">
+        <span
+            style="width:
+            <?= (int) $security['profilingExposure']['level'] * 25 ?>%"
+        ></span>
+    </div>
 
-            <div class="card-tooltip">
-                <p>
-                    Wykryte zainteresowania:
-                    <?= (int) $security['profiling']['count'] ?>
-                </p>
+    <div class="card-tooltip">
 
-                <?php if (!empty($interests)): ?>
-                    <p>
-                        Kategorie:
-                        <?= htmlspecialchars(
-                            implode(
-                                ', ',
-                                array_map(
-                                    fn($interest) => is_array($interest)
-                                        ? $interest['name']
-                                        : $interest,
-                                    $interests
-                                )
-                            )
-                        ) ?>
-                    </p>
-                <?php endif; ?>
-            </div>
-        </article>
+        <p>
+            Zainteresowania:
+            <?= (int) $security['profilingExposure']['interestsCount'] ?>
+        </p>
 
+        <p>
+            Sygnały identyfikacyjne:
+            <?= (int) $security['profilingExposure']['signalsCount'] ?>
+        </p>
 
-        <article
-            class="security-card"
-            data-level="<?= (int) $security['identityExposure']['level'] ?>"
-            tabindex="0"
-        >
-            <h3>Ekspozycja tożsamości</h3>
+    </div>
+</article>
 
-            <strong>
-                <?= htmlspecialchars($security['identityExposure']['status']) ?>
-            </strong>
+<article
+    class="security-card"
+    data-level="<?= (int) $security['similarAccounts']['level'] ?>"
+    tabindex="0"
+>
+    <h3>Podobne konta</h3>
 
-            <div class="status-bar">
-                <span style="width: <?= (int) $security['identityExposure']['level'] * 25 ?>%"></span>
-            </div>
+    <strong>
+        <?= htmlspecialchars(
+            $security['similarAccounts']['status']
+        ) ?>
+    </strong>
 
-            <div class="card-tooltip">
-                <p>
-                    Wykryte sygnały:
-                    <?= count($security['identityExposure']['signals']) ?>
-                </p>
+    <div class="status-bar">
+        <span
+            style="width:
+            <?= (int) $security['similarAccounts']['level'] * 25 ?>%"
+        ></span>
+    </div>
 
-                <?php if (!empty($security['identityExposure']['signals'])): ?>
-                    <ul>
-                        <?php foreach ($security['identityExposure']['signals'] as $signal): ?>
-                            <li>
-                                <?= htmlspecialchars($signal['message']) ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php else: ?>
-                    <p>
-                        Nie wykryto oczywistych wskazówek identyfikacyjnych.
-                    </p>
-                <?php endif; ?>
-            </div>
-        </article>
+    <div class="card-tooltip">
+
+        <p>
+            Znalezione profile:
+            <?= (int) $security['similarAccounts']['count'] ?>
+        </p>
+
+        <p>
+            Im więcej podobnych kont wykorzystuje ten sam nick,
+            tym łatwiej powiązać aktywność między serwisami.
+        </p>
+
+    </div>
+</article>
 
     </div>
 
@@ -290,17 +281,22 @@ $security = calculateSecurityStatus(
                 'data' => $security['visibility'],
                 'description' => 'Powiązane profile: ' . $security['visibility']['count']
             ],
-            [
-                'title' => 'Możliwość profilowania',
-                'data' => $security['profiling'],
-                'description' => 'Wykryte kategorie: ' . $security['profiling']['count']
-            ],
-            [
-                'title' => 'Ekspozycja tożsamości',
-                'data' => $security['identityExposure'],
-                'description' => 'Wykryte sygnały: ' .
-                    count($security['identityExposure']['signals'])
-            ]
+[
+    'title' => 'Profilowanie i identyfikacja',
+    'data' => $security['profilingExposure'],
+    'description' =>
+        'Zainteresowania: ' .
+        $security['profilingExposure']['interestsCount'] .
+        ', sygnały: ' .
+        $security['profilingExposure']['signalsCount']
+],
+[
+    'title' => 'Podobne konta',
+    'data' => $security['similarAccounts'],
+    'description' =>
+        'Znalezione profile: ' .
+        $security['similarAccounts']['count']
+]
         ];
         ?>
 

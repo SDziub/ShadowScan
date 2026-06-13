@@ -59,6 +59,8 @@ function calculateSecurityStatus(
         )
     );
 
+    $similarAccountsCount = $foundAccounts;
+
     $interestCount = count($interests);
 
     if (!$scanSuccess) {
@@ -163,7 +165,43 @@ function calculateSecurityStatus(
         $recommendations[] = 'Kontynuuj stosowanie różnych haseł i uwierzytelniania dwuskładnikowego.';
     }
 
+    $identityLevel = $identityExposure['level'] ?? 1;
+
+$combinedLevel = max(
+    $profilingLevel,
+    $identityLevel
+);
+
+$combinedStatus = match ($combinedLevel) {
+    1 => 'Niska',
+    2 => 'Umiarkowana',
+    3 => 'Podwyższona',
+    default => 'Wysoka'
+};
+
     return [
+        'similarAccounts' => [
+    'status' => $foundAccounts === 0
+        ? 'Brak'
+        : ($foundAccounts <= 2
+            ? 'Kilka'
+            : ($foundAccounts <= 5
+                ? 'Wiele'
+                : 'Bardzo wiele')),
+    'level' => min(
+        max($foundAccounts, 1),
+        4
+    ),
+    'count' => $foundAccounts
+],
+        'profilingExposure' => [
+    'status' => $combinedStatus,
+    'level' => $combinedLevel,
+    'interestsCount' => $interestCount,
+    'signalsCount' => count(
+        $identityExposure['signals'] ?? []
+    )
+],
         'main' => [
             'status' => $mainStatus,
             'level' => $mainLevel,

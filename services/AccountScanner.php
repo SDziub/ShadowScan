@@ -13,7 +13,7 @@ function scanAccounts(string $email, string $username): array
 
     $platforms = [
         "GitHub" => "https://github.com/%s",
-        "Reddit" => "https://www.reddit.com/user/%s",
+        "YouTube"     => "https://www.youtube.com/@%s",
         "Twitch" => "https://www.twitch.tv/%s",
         "X / Twitter" => "https://x.com/%s",
         "TikTok" => "https://www.tiktok.com/@%s",

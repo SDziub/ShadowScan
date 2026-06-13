@@ -1,9 +1,7 @@
 <?php
-
 header("Content-Type: application/json; charset=utf-8");
 
 require_once "path.php";
-
 require_once ROOT_PATH . "services/EmailScanner.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
 require_once ROOT_PATH . "services/RiskCalculator.php";
@@ -12,7 +10,6 @@ require_once ROOT_PATH . "services/UrlChecker.php";
 require_once ROOT_PATH . "services/InterestProfiler.php";
 
 try {
-
     $email = trim($_POST['email'] ?? '');
     $username = trim($_POST['username'] ?? '');
 
@@ -44,7 +41,6 @@ try {
     if (function_exists('analyzeDigitalFootprint')) {
         $footprintResult = analyzeDigitalFootprint($email, $username);
     }
-
 $risk = 0;
 
 if (function_exists('calculateRisk')) {
@@ -67,9 +63,5 @@ if (function_exists('calculateRisk')) {
 } catch (Throwable $e) {
 
     http_response_code(400);
-
-    echo json_encode([
-        "success" => false,
-        "error" => $e->getMessage()
-    ], JSON_UNESCAPED_UNICODE);
+    echo json_encode(["success" => false, "error" => $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }

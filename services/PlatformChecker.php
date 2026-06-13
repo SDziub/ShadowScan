@@ -2,15 +2,15 @@
 
 function checkPlatform(string $platform, string $url, string $username): array
 {
-    return match ($platform) {
-        "GitHub"    => checkGitHub($url),
-        "Reddit"    => checkReddit($url),
-        "Twitch"    => checkTwitch($url),
-        "X / Twitter" => checkGeneric($url),
-        "TikTok"    => checkGeneric($url),
-        "Spotify"   => checkGeneric($url),
-        default     => checkGeneric($url),
-    };
+return match ($platform) {
+    "GitHub"      => checkGitHub($url),
+    "YouTube"     => checkYouTube($url),
+    "Twitch"      => checkTwitch($url),
+    "X / Twitter" => checkGeneric($url),
+    "TikTok"      => checkGeneric($url),
+    "Spotify"     => checkGeneric($url),
+    default       => checkGeneric($url),
+};
 }
 
 function checkGeneric(string $url): array
@@ -67,7 +67,7 @@ function checkGitHub(string $url): array
     ];
 }
 
-function checkReddit(string $url): array
+function checkYouTube(string $url): array
 {
     $ch = curl_init($url);
 
@@ -80,24 +80,31 @@ function checkReddit(string $url): array
 
     $html = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
     curl_close($ch);
 
-    $confidence = 0;
+    if (!$html) {
+        return [
+            "exists" => false,
+            "confidence" => 0,
+            "status" => $status
+        ];
+    }
 
-    // 🔥 REDDIT NIE RELY NA STATUS
-    if (str_contains($html, "Sorry, nobody on Reddit goes by that name")) {
-        $confidence = 0;
-    }
-    elseif (str_contains($html, "u/") || str_contains($html, "karma")) {
-        $confidence = 85;
-    }
-    elseif ($status === 200) {
-        $confidence = 60;
+    if (
+        stripos($html, "This channel does not exist") !== false ||
+        stripos($html, "404 Not Found") !== false
+    ) {
+        return [
+            "exists" => false,
+            "confidence" => 0,
+            "status" => $status
+        ];
     }
 
     return [
-        "exists" => $confidence > 50,
-        "confidence" => $confidence,
+        "exists" => ($status === 200),
+        "confidence" => ($status === 200 ? 80 : 20),
         "status" => $status
     ];
 }
@@ -110,7 +117,7 @@ function checkTwitch(string $url): array
 
     if (!$html) return ["exists" => false, "confidence" => 0];
 
-    if (str_contains($html, "Sorry. Unless you’ve got a time machine")) {
+    if (str_contains($html, "Sorry. Unless you've got a time machine")) {
         $confidence = 0;
     } else {
         $confidence = 80;
