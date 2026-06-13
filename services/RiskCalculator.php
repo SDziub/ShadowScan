@@ -4,14 +4,14 @@ function calculateRisk(array $emailResult, array $usernameResult): array
 {
     $risk = ($emailResult['risk'] ?? 0) + ($usernameResult['risk'] ?? 0);
 
-    $level = "LOW";
+    $level = "Niskie ryzyko";
 
     if ($risk > 40) {
-        $level = "MEDIUM";
+        $level = "Srednie ryzyko";
     }
 
     if ($risk > 80) {
-        $level = "HIGH";
+        $level = "Wysokie ryzyko";
     }
 
     $score = max(0, 100 - $risk);

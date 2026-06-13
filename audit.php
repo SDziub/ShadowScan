@@ -12,10 +12,9 @@ if (empty($email) || empty($username)) {
 
 require_once ROOT_PATH . "services/EmailScanner.php";
 require_once ROOT_PATH . "services/UsernameScanner.php";
-require_once ROOT_PATH . "services/RiskCalculator.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
-require_once ROOT_PATH . "services/BreachScanner.php";
-require_once ROOT_PATH . "services/audit_data.php";
+require_once ROOT_PATH . "services/RiskCalculator.php";
+require_once ROOT_PATH . "services/FootprintScanner.php";
 
 $accountsResult = scanAccounts($email, $username);
 
