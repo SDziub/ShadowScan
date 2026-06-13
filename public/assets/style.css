@@ -1,5 +1,3 @@
-
-
 :root {
     --background-colour: #002b36;
     --right-background: #001f28;
@@ -32,56 +30,39 @@ body {
 
 body::before {
     content: "";
-
     position: fixed;
     inset: -100%;
-
-    background:
-        radial-gradient(circle, rgba(255,255,255,.20) 1px, transparent 1px);
-
+    background: radial-gradient(circle, rgba(255,255,255,.20) 1px, transparent 1px);
     background-size: 4px 4px;
-
     opacity: .55;
-
     pointer-events: none;
-
     animation: staticNoise .25s steps(8) infinite;
-
     z-index: 1;
 }
 
 body::after {
     content: "";
-
     position: fixed;
     inset: 0;
-
     background:
         repeating-linear-gradient(
             to bottom,
             rgba(255,255,255,.00) 0px,
-            rgba(255,255,255,.00) 2px,
-            rgba(255,255,255,.05) 3px,
-            rgba(255,255,255,.00) 4px
+            rgba(255,255,255,.00) 8px,
+            rgba(255,255,255,.05) 12px,
+            rgba(255,255,255,.00) 16px
         );
-
     opacity: .9;
-
     pointer-events: none;
-
     z-index: 2;
 }
 
 .container {
     position: relative;
     z-index: 3;
-
     display: flex;
     min-height: 100vh;
-
-    text-shadow:
-        0 0 2px rgba(255,255,255,.2),
-        0 0 8px rgba(255,255,255,.05);
+    text-shadow: 0 0 2px rgba(255,255,255,.2), 0 0 8px rgba(255,255,255,.05);
 }
 
 .left-panel {
@@ -96,11 +77,8 @@ body::after {
 
 .right-panel {
     flex: 1.1;
-
     background: var(--right-background);
-
     padding: 80px;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -129,39 +107,24 @@ body::after {
     line-height: 1.4;
     font-weight: 700;
     color: var(--h1-colour);
-
     width: 10ch;
     overflow: hidden;
     white-space: nowrap;
-
     border-right: 3px solid var(--text-colour);
-
-    text-shadow:
-        0 0 8px rgba(255,255,255,.15);
-
-    animation:
-        typing-title 2s steps(10),
-        blink-cursor .8s infinite;
+    text-shadow: 0 0 8px rgba(255,255,255,.15);
+    animation: typing-title 1.5s steps(10), blink-cursor .8s infinite;
 }
 
 .typing-heading {
     font-size: 2.8rem;
     font-weight: 700;
     color: var(--h1-colour);
-
     width: 0;
     overflow: hidden;
     white-space: nowrap;
-
     border-right: 3px solid var(--text-colour);
-
-    text-shadow:
-        0 0 8px rgba(255,255,255,.12);
-
-    animation:
-        typing-heading 3s steps(31) 1.8s forwards,
-        blink-cursor .8s infinite;
-
+    text-shadow: 0 0 8px rgba(255,255,255,.12);
+    animation: typing-heading 2s steps(31) 0.2s forwards, blink-cursor .8s infinite;
     margin-bottom: 40px;
 }
 
@@ -191,61 +154,42 @@ label {
 
 input {
     width: 100%;
-
     padding: 14px;
     margin-bottom: 24px;
-
     background: transparent;
-
     border: 1px solid var(--border-colour);
-
     color: var(--input-colour);
-
     font-family: inherit;
     font-size: 1rem;
-
     transition: .2s;
 }
 
 input::placeholder {
-    color: #8ea5af;
+    color: var(--note-colour);
 }
 
-input:hover,
-input:focus {
+input:hover, input:focus {
     outline: none;
-
-    box-shadow:
-        0 0 15px rgba(96,125,139,.35);
-
-    border-color: #90a4ae;
+    box-shadow: 0 0 15px rgba(96,125,139,.35);
+    border-color: var(--border-colour);
 }
 
 button {
     width: 100%;
-
     padding: 14px;
-
     background: transparent;
-
     border: 2px solid var(--text-colour);
-
     color: var(--text-colour);
-
     font-family: inherit;
     font-size: 1rem;
     font-weight: 700;
-
     cursor: pointer;
-
     transition: .2s;
 }
 
 button:hover {
     background: var(--hover-colour);
-
-    box-shadow:
-        0 0 15px rgba(255,255,255,.1);
+    box-shadow: 0 0 15px rgba(255,255,255,.1);
 }
 
 .right-panel h3 {
@@ -271,11 +215,8 @@ button:hover {
 
 .note {
     margin-top: 35px;
-
     padding-top: 20px;
-
     border-top: 1px solid var(--border-colour);
-
     color: var(--note-colour);
 }
 
