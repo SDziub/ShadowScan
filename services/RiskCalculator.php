@@ -1,15 +1,24 @@
 <?php
 
-function calculateRisk($emailResult, $usernameResult) {
-    $score = 100;
+function calculateRisk(array $emailResult, array $usernameResult): array
+{
+    $risk = ($emailResult['risk'] ?? 0) + ($usernameResult['risk'] ?? 0);
 
-    $score -= $emailResult["risk"];
-    $score -= $usernameResult["risk"];
+    $level = "LOW";
 
-    if ($score < 0) $score = 0;
+    if ($risk > 40) {
+        $level = "MEDIUM";
+    }
+
+    if ($risk > 80) {
+        $level = "HIGH";
+    }
+
+    $score = max(0, 100 - $risk);
 
     return [
         "privacyScore" => $score,
-        "level" => $score >= 75 ? "Niskie ryzyko" : ($score >= 45 ? "Średnie ryzyko" : "Wysokie ryzyko")
+        "level" => $level,
+        "rawRisk" => $risk
     ];
 }

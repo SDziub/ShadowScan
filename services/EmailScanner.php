@@ -1,25 +1,23 @@
 <?php
 
-function scanEmail($email) {
+require_once ROOT_PATH . "services/BreachScanner.php";
+
+function scanEmail(string $email): array
+{
     $domain = substr(strrchr($email, "@"), 1);
 
+    $breaches = getBreaches($email);
+
     $risk = 0;
-    $warnings = [];
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $risk += 40;
-        $warnings[] = "Niepoprawny format e-maila";
-    }
-
-    if (in_array($domain, ["gmail.com", "wp.pl", "onet.pl"])) {
-        $risk += 10;
-        $warnings[] = "Popularna domena e-mail";
+    if (!empty($breaches)) {
+        $risk += count($breaches) * 15;
     }
 
     return [
         "email" => $email,
         "domain" => $domain,
-        "risk" => $risk,
-        "warnings" => $warnings
+        "breaches" => $breaches,
+        "risk" => $risk
     ];
 }
