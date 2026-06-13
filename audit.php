@@ -14,6 +14,7 @@ require_once ROOT_PATH . "services/EmailScanner.php";
 require_once ROOT_PATH . "services/UsernameScanner.php";
 require_once ROOT_PATH . "services/RiskCalculator.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
+require_once ROOT_PATH . "services/BreachScanner.php";
 
 $accountsResult = scanAccounts($email, $username);
 
@@ -65,10 +66,10 @@ function analyzeDigitalFootprint(string $email, string $username): array
 
     $risk += $found * 10;
 
-    // 3. IntelligenceX footprint (OSINT indexing)
+
     $intelRisk = 0;
 
-    $intelResults = fetchIntelX($email); // jeśli masz
+    $intelResults = fetchIntelX($email);
 
     if (!empty($intelResults)) {
         $intelRisk = 20;
@@ -82,6 +83,7 @@ function analyzeDigitalFootprint(string $email, string $username): array
         "signals" => $signals
     ];
 }
+$footprint = analyzeDigitalFootprint($email, $username);
 ?>
 
 <!DOCTYPE html>

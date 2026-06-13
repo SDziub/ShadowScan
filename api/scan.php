@@ -5,8 +5,8 @@ require_once "../services/EmailScanner.php";
 require_once "../services/UsernameScanner.php";
 require_once "../services/RiskCalculator.php";
 
-$email = "test@gmail.com";
-$username = "Silvernax";
+$email = $_POST['email'] ?? '';
+$username = $_POST['username'] ?? '';
 
 if (!$email) {
     echo json_encode([

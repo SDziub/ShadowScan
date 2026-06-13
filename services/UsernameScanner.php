@@ -64,10 +64,25 @@ $platforms = [
     if (preg_match("/fit|gym|run|sport/i", $username)) {
         $interests[] = "sport";
     }
+    
+    if (preg_match("/crypto|btc|eth|web3/i", $username)) {
+    $interests[] = "kryptowaluty";
+}
+
+if (preg_match("/music|dj|beat|rap/i", $username)) {
+    $interests[] = "muzyka";
+}
+
+if (preg_match("/ai|ml|data/i", $username)) {
+    $interests[] = "sztuczna inteligencja";
+}
 
     $existingCount = count(array_filter($foundProfiles, fn($p) => $p["exists"]));
 
-    $risk = ($existingCount * 15) + (count($interests) * 10);
+    $risk = min(
+    ($existingCount * 10) + (count($interests) * 10),
+    100
+);
 
     return [
         "username" => $username,

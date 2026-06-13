@@ -17,7 +17,7 @@ require_once "path.php";
         <h1 class="typing-title">ShadowScan</h1>
         <p class="terminal-subtitle"> digital footprint audit</p>
 
-        <form id="scanForm" form action="audit.php" method="POST">
+        <form id="scanForm" action="audit.php" method="POST">
             <label>Email</label>
             <input
                 type="email"
