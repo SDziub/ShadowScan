@@ -46,24 +46,36 @@ function scanAccounts(string $email, string $username): array
 
     $results = [];
 
-    foreach ($candidates as $candidate) {
+    foreach ($platforms as $platform => $urlPattern) {
+        $checked = [];
+        $found = false;
+        $foundUrl = null;
+        $foundAs = null;
 
-        foreach ($platforms as $platform => $urlPattern) {
-
-            $url = sprintf(
-                $urlPattern,
-                rawurlencode($candidate)
-            );
-
+        foreach ($candidates as $candidate) {
+            $url = sprintf($urlPattern, rawurlencode($candidate));
             $exists = checkUrl($url);
 
-            $results[] = [
-                "platform"   => $platform,
+            $checked[] = [
                 "searchedAs" => $candidate,
-                "url"        => $url,
-                "exists"     => $exists
+                "url" => $url,
+                "exists" => $exists
             ];
+
+            if ($exists && !$found) {
+                $found = true;
+                $foundUrl = $url;
+                $foundAs = $candidate;
+            }
         }
+
+        $results[] = [
+            "platform" => $platform,
+            "exists" => $found,
+            "foundAs" => $foundAs,
+            "url" => $foundUrl,
+            "checked" => $checked
+        ];
     }
 
     return $results;

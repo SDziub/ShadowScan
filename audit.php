@@ -113,15 +113,15 @@ $footprint = analyzeDigitalFootprint($email, $username);
 <?php foreach ($accountsResult as $account): ?>
     <div class="profile-item">
         <strong><?= htmlspecialchars($account["platform"]) ?></strong>
-        <p>Szukano jako: <?= htmlspecialchars($account["searchedAs"]) ?></p>
 
         <?php if ($account["exists"]): ?>
-            <span>✓ Znaleziono</span><br>
+            <p>✓ Znaleziono jako: <?= htmlspecialchars($account["foundAs"]) ?></p>
+
             <a href="<?= htmlspecialchars($account["url"]) ?>" target="_blank">
                 Otwórz profil
             </a>
         <?php else: ?>
-            <span>✗ Nie znaleziono</span>
+            <p>✗ Nie znaleziono</p>
         <?php endif; ?>
     </div>
 <?php endforeach; ?>
