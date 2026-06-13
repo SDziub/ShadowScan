@@ -15,6 +15,7 @@ require_once ROOT_PATH . "services/UsernameScanner.php";
 require_once ROOT_PATH . "services/RiskCalculator.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
 require_once ROOT_PATH . "services/BreachScanner.php";
+require_once ROOT_PATH . "services/audit_data.php";
 
 $accountsResult = scanAccounts($email, $username);
 
@@ -22,74 +23,14 @@ $emailResult = scanEmail($email);
 $usernameResult = scanUsername($username);
 $risk = calculateRisk($emailResult, $usernameResult);
 
-function analyzeDigitalFootprint(string $email, string $username): array
-{
-    $signals = [];
-    $risk = 0;
 
-    $breaches = getBreaches($email);
-
-    if (!empty($breaches)) {
-        $risk += count($breaches) * 15;
-        $signals[] = "Email znaleziony w wyciekach danych";
-    }
-
-    $platforms = [
-        "GitHub",
-        "Reddit",
-        "TikTok"
-    ];
-
-    $found = 0;
-
-    foreach ($platforms as $p) {
-        $url = match($p) {
-            "GitHub" => "https://github.com/" . urlencode($username),
-            "Reddit" => "https://www.reddit.com/user/" . urlencode($username),
-            "TikTok" => "https://www.tiktok.com/@" . urlencode($username),
-        };
-
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        curl_exec($ch);
-
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($code >= 200 && $code < 400) {
-            $found++;
-            $signals[] = "Profil istnieje: {$p}";
-        }
-    }
-
-    $risk += $found * 10;
-
-
-    $intelRisk = 0;
-
-    $intelResults = fetchIntelX($email);
-
-    if (!empty($intelResults)) {
-        $intelRisk = 20;
-        $signals[] = "Wzmianki w indeksach OSINT (IntelligenceX)";
-    }
-
-    $risk += $intelRisk;
-
-    return [
-        "risk" => min($risk, 100),
-        "signals" => $signals
-    ];
-}
 $footprint = analyzeDigitalFootprint($email, $username);
 ?>
 
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <?php require_once ROOT_PATH . "public/includes/head.php"; ?>
+    <?php require_once ROOT_PATH . "public/includes/head_audit.php"; ?>
     <title>Raport - ShadowScan</title>
 </head>
 <body>
@@ -190,7 +131,11 @@ $footprint = analyzeDigitalFootprint($email, $username);
     <div class="content">
     <h2 class="typing-heading">Gdzie znaleziono konta?</h2>
 
-<?php foreach ($accountsResult as $account): ?>
+    <div id="auditLoading">
+    Trwa analiza...
+</div>
+
+<div id="auditResults"><?php foreach ($accountsResult as $account): ?>
     <div class="profile-item">
         <strong><?= htmlspecialchars($account["platform"]) ?></strong>
 
@@ -205,10 +150,11 @@ $footprint = analyzeDigitalFootprint($email, $username);
         <?php endif; ?>
     </div>
 <?php endforeach; ?>
+</div>
+
 
 </section>
 
-</section>
 
 </div>
 
