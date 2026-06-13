@@ -13,10 +13,75 @@ if (empty($email) || empty($username)) {
 require_once ROOT_PATH . "services/EmailScanner.php";
 require_once ROOT_PATH . "services/UsernameScanner.php";
 require_once ROOT_PATH . "services/RiskCalculator.php";
+require_once ROOT_PATH . "services/AccountScanner.php";
+
+$accountsResult = scanAccounts($email, $username);
 
 $emailResult = scanEmail($email);
 $usernameResult = scanUsername($username);
 $risk = calculateRisk($emailResult, $usernameResult);
+
+function analyzeDigitalFootprint(string $email, string $username): array
+{
+    $signals = [];
+    $risk = 0;
+
+    $breaches = getBreaches($email);
+
+    if (!empty($breaches)) {
+        $risk += count($breaches) * 15;
+        $signals[] = "Email znaleziony w wyciekach danych";
+    }
+
+    $platforms = [
+        "GitHub",
+        "Reddit",
+        "TikTok"
+    ];
+
+    $found = 0;
+
+    foreach ($platforms as $p) {
+        $url = match($p) {
+            "GitHub" => "https://github.com/" . urlencode($username),
+            "Reddit" => "https://www.reddit.com/user/" . urlencode($username),
+            "TikTok" => "https://www.tiktok.com/@" . urlencode($username),
+        };
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_exec($ch);
+
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code >= 200 && $code < 400) {
+            $found++;
+            $signals[] = "Profil istnieje: {$p}";
+        }
+    }
+
+    $risk += $found * 10;
+
+    // 3. IntelligenceX footprint (OSINT indexing)
+    $intelRisk = 0;
+
+    $intelResults = fetchIntelX($email); // jeśli masz
+
+    if (!empty($intelResults)) {
+        $intelRisk = 20;
+        $signals[] = "Wzmianki w indeksach OSINT (IntelligenceX)";
+    }
+
+    $risk += $intelRisk;
+
+    return [
+        "risk" => min($risk, 100),
+        "signals" => $signals
+    ];
+}
 ?>
 
 <!DOCTYPE html>
@@ -41,25 +106,23 @@ $risk = calculateRisk($emailResult, $usernameResult);
     <p><?= $risk['privacyScore'] ?>/100</p>
     <p><?= $risk['level'] ?></p>
 
-    <h2>Wykryte profile</h2>
+<h2>Gdzie znaleziono konta?</h2>
 
-    <?php foreach ($usernameResult["profiles"] as $profile): ?>
-        <div class="profile-item">
+<?php foreach ($accountsResult as $account): ?>
+    <div class="profile-item">
+        <strong><?= htmlspecialchars($account["platform"]) ?></strong>
+        <p>Szukano jako: <?= htmlspecialchars($account["searchedAs"]) ?></p>
 
-            <strong><?= htmlspecialchars($profile["platform"]) ?></strong>
-
-            <?php if ($profile["exists"]): ?>
-                <span class="found">Znaleziono</span>
-                <br>
-                <a href="<?= htmlspecialchars($profile["url"]) ?>" target="_blank">
-                    Zobacz profil
-                </a>
-            <?php else: ?>
-                <span class="not-found">✗ Nie znaleziono</span>
-            <?php endif; ?>
-
-        </div>
-    <?php endforeach; ?>
+        <?php if ($account["exists"]): ?>
+            <span>✓ Znaleziono</span><br>
+            <a href="<?= htmlspecialchars($account["url"]) ?>" target="_blank">
+                Otwórz profil
+            </a>
+        <?php else: ?>
+            <span>✗ Nie znaleziono</span>
+        <?php endif; ?>
+    </div>
+<?php endforeach; ?>
 
 </section>
 
@@ -107,12 +170,21 @@ $risk = calculateRisk($emailResult, $usernameResult);
             <p>Nie znaleziono znanych wycieków.</p>
         <?php endif; ?>
 
-        <div class="audit-card">
-            <h3>Cookies i śledzenie</h3>
-            <p>
-                Użytkownik korzystający z tego samego nicku na wielu platformach może być łatwiej śledzony.
-            </p>
-        </div>
+<div class="audit-card">
+    <h3>Digital footprint & tracking</h3>
+
+    <p><strong>Ryzyko śledzenia:</strong> <?= $footprint['risk'] ?>/100</p>
+
+    <?php if (!empty($footprint['signals'])): ?>
+        <ul>
+            <?php foreach ($footprint['signals'] as $s): ?>
+                <li><?= htmlspecialchars($s) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <p>Brak silnych sygnałów śledzenia.</p>
+    <?php endif; ?>
+</div>
 
         <div class="audit-card">
             <h3>Profilowanie</h3>

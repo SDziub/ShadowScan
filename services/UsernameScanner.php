@@ -24,11 +24,20 @@ function scanUsername($username)
 {
     $username = trim($username);
 
-    $platforms = [
-        "GitHub" => "https://github.com/" . urlencode($username),
-        "Reddit" => "https://www.reddit.com/user/" . urlencode($username),
-        "TikTok" => "https://www.tiktok.com/@" . urlencode($username)
-    ];
+$platforms = [
+    "GitHub" => "https://github.com/" . urlencode($username),
+    "Reddit" => "https://www.reddit.com/user/" . urlencode($username),
+    "TikTok" => "https://www.tiktok.com/@" . urlencode($username),
+    "Instagram" => "https://www.instagram.com/" . urlencode($username),
+    "X / Twitter" => "https://x.com/" . urlencode($username),
+    "YouTube" => "https://www.youtube.com/@" . urlencode($username),
+    "Pinterest" => "https://www.pinterest.com/" . urlencode($username),
+    "Twitch" => "https://www.twitch.tv/" . urlencode($username),
+    "Steam" => "https://steamcommunity.com/id/" . urlencode($username),
+    "GitLab" => "https://gitlab.com/" . urlencode($username),
+    "Medium" => "https://medium.com/@" . urlencode($username),
+    "Kaggle" => "https://www.kaggle.com/" . urlencode($username),
+];
 
     $foundProfiles = [];
 
