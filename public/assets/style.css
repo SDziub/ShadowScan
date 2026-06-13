@@ -9,7 +9,8 @@
     --border-colour: #607d8b;
     --input-colour: #eceff1;
     --hover-colour: #ffffff0d;
-    --note-colour :#90a4ae; 
+    --note-colour :#90a4ae;
+    --right-background: #001f28; 
 
 }
 
@@ -20,10 +21,22 @@
 }
 
 body {
-    background:var(--background-colour);
-    color:var(--text-colour);
+    background: var(--background-colour);
+    color: var(--text-colour);
     font-family: 'IBM Plex Mono', monospace;
     min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(#ffffff08 1px, transparent 1px);
+    background-size: 4px 4px;
+    opacity: .15;
+    pointer-events: none;
 }
 
 .container {
@@ -31,9 +44,13 @@ body {
     min-height: 100vh;
 }
 
-.left-panel,
+.left-panel{
+    flex: 0.9;
+    padding: 80px;
+}
+
 .right-panel {
-    flex: 1;
+    flex: 1.1;
     padding: 80px;
 }
 
@@ -44,7 +61,7 @@ body {
 .left-panel h1 {
     font-size: 3rem;
     font-weight: 700;
-    color: var(-- h1-colour);
+    color: var(--h1-colour);
     margin-bottom: 50px;
 }
 
@@ -79,17 +96,13 @@ input:focus {
 button {
     width: 100%;
     padding: 14px;
-
     background: transparent;
     border: 2px solid var(--text-colour);
-
     color: var(--text-colour);
     cursor: pointer;
-
     font-family: inherit;
     font-size: 1rem;
     font-weight: 700;
-
     transition: .2s;
 }
 
@@ -98,6 +111,7 @@ button:hover {
 }
 
 .right-panel {
+    background: var(--right-background);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -139,4 +153,38 @@ button:hover {
     font-size: 0.95rem;
     color: var(--note-colour);
 }
+
+.terminal-title::after {
+    content: "_";
+    display: inline-block;
+    margin-left: 4px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+
+    51%, 100% {
+        opacity: 0;
+    }
+}
+
+.right-panel .content {
+    max-width: 750px;
+}
+
+input::placeholder {
+    color: var(--input-colour);
+}
+
+input:hover, input:focus {
+    box-shadow: 0 0 10px var(--border-colour);
+}
+
+.terminal-subtitle {
+    color: var(--note-colour);
+    margin-bottom: 50px;
+    letter-spacing: 1px;
 }

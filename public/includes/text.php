@@ -1,4 +1,4 @@
-        <h2>Czym jest Cyfrowy Audyt Cieni?</h2>
+        <h2 class="terminal-title">Czym jest Cyfrowy Audyt Cieni?</h2>
 
         <p>
             Cyfrowy Audyt Cieni to analiza publicznie dostępnych śladów
