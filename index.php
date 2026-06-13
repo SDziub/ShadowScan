@@ -12,15 +12,37 @@ require_once "path.php";
 
 <body>
 <div class="container">
+
     <section class="left-panel">
         <h1>ShadowScan</h1>
-</section>
-</div>
 
-<section class="right-panel">
+        <form id="scanForm">
+            <label>Email</label>
+            <input
+                type="email"
+                name="email"
+                placeholder="jan@example.com"
+                required
+            >
 
+            <label>Nick</label>
+            <input
+                type="text"
+                name="username"
+                placeholder="Silvernax"
+                required
+            >
+
+            <button type="submit">
+                Skanuj
+            </button>
+        </form>
     </section>
-</div>
 
+    <section class="right-panel">
+    <?php include(ROOT_PATH ."public/includes/text.php"); ?>
+    </section>
+
+</div>
 </body>
 </html>
