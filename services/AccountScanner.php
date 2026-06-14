@@ -28,7 +28,6 @@ function scanAccounts(
     $platforms = [
         'GitHub' => 'https://github.com/%s',
         'YouTube' => 'https://www.youtube.com/@%s',
-        'Reddit' => 'https://www.reddit.com/user/%s/',
         'Twitch' => 'https://www.twitch.tv/%s',
         'X / Twitter' => 'https://x.com/%s',
         'TikTok' => 'https://www.tiktok.com/@%s',

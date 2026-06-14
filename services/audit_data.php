@@ -24,7 +24,7 @@ $accountsResult = scanAccounts($email, $username);
 
         <?php if ($account["exists"]): ?>
 
-            <p>✓ Znaleziono</p>
+            <p>Znaleziono</p>
 
             <a
                 href="<?= htmlspecialchars($account["url"]) ?>"
@@ -35,7 +35,7 @@ $accountsResult = scanAccounts($email, $username);
 
         <?php else: ?>
 
-            <p>✗ Nie znaleziono</p>
+            <p>Nie znaleziono</p>
 
         <?php endif; ?>
 

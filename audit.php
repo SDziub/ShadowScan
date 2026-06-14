@@ -428,7 +428,7 @@ $security = calculateSecurityStatus(
             <?php if ($account['exists'] === true): ?>
 
     <p class="profile-found">
-        ✓ Prawdopodobnie znaleziono profil
+        Prawdopodobnie znaleziono profil
     </p>
 
     <?php if (!empty($account['url'])): ?>
@@ -450,13 +450,13 @@ $security = calculateSecurityStatus(
 <?php elseif ($account['exists'] === false): ?>
 
     <p class="profile-not-found">
-        ✗ Nie znaleziono profilu
+        Nie znaleziono profilu
     </p>
 
 <?php else: ?>
 
     <p class="profile-unknown">
-        ? Nie udało się potwierdzić
+        Nie udało się potwierdzić
     </p>
 
 <?php endif; ?>
