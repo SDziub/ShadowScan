@@ -51,7 +51,6 @@ function checkCompletedPlatformResponse(
     return match ($platform) {
         'GitHub' => interpretGitHubResponse($status),
         'YouTube' => interpretYouTubeResponse($html, $status),
-        'Reddit' => interpretRedditResponse($html, $status),
         'Twitch' => interpretTwitchResponse(
             $html,
             $status,
