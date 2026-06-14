@@ -120,7 +120,7 @@ a:hover {
     white-space: nowrap;
     border-right: 3px solid var(--text-colour);
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
-    animation: typing-title 1.5s steps(10.5) forwards, blink-cursor 0.8s infinite;
+    animation: typing-title 1.5s steps(11) forwards, blink-cursor 0.8s infinite;
 }
 
 .main-security-status {
@@ -348,7 +348,7 @@ a:hover {
     white-space: nowrap;
     border-right: 3px solid var(--text-colour);
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.12);
-    animation: typing-heading 2s steps(22) 0.2s forwards, blink-cursor 0.8s infinite;
+    animation: typing-heading 2s steps(20) 0.2s forwards, blink-cursor 0.8s infinite;
     margin-bottom: 40px;
 }
 
@@ -393,7 +393,7 @@ a:hover {
 
 @keyframes typing-heading {
     from {width: 0;}
-    to {width: 34ch;}
+    to {width: 20ch;}
 }
 
 @keyframes blink-cursor {
