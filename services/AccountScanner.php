@@ -4,16 +4,18 @@ require_once ROOT_PATH . "services/PlatformChecker.php";
 
 function scanAccounts(string $email, string $username): array
 {
-    $emailName = explode("@", $email)[0] ?? '';
+$emailName = explode('@', $email)[0];
 
-    $candidates = array_values(
-        array_unique(
-            array_filter([
-                trim($username),
-                trim($emailName)
-            ])
-        )
-    );
+$candidates = array_unique([
+    $username,
+    $emailName,
+
+    str_replace('.', '', $emailName),
+    str_replace('_', '', $emailName),
+
+    strtolower($username),
+    strtolower($emailName)
+]);
 
     $platforms = [
         "GitHub" => "https://github.com/%s",
@@ -26,38 +28,74 @@ function scanAccounts(string $email, string $username): array
 
     $results = [];
 
-    foreach ($platforms as $platform => $pattern) {
+foreach ($platforms as $platform => $pattern) {
 
-    $best = [
-        "exists" => null,
-        "confidence" => -1,
-        "url" => null,
-        "foundAs" => null,
-        "status" => null
-    ];
+    $usernameUrl = sprintf($pattern, rawurlencode($username));
+    $emailUrl    = sprintf($pattern, rawurlencode($emailName));
 
-    foreach ($candidates as $c) {
+    $usernameRes = checkPlatform($platform, $usernameUrl, $username);
+    $emailRes    = checkPlatform($platform, $emailUrl, $emailName);
 
-        $url = sprintf($pattern, rawurlencode($c));
+    $usernameExists = $usernameRes["exists"] === true;
+    $emailExists    = $emailRes["exists"] === true;
 
-        $res = checkPlatform($platform, $url, $c);
+    // 1. znaleziono oba
+    if ($usernameExists && $emailExists) {
 
-        $confidence = $res["confidence"] ?? 0;
+        $results[] = [
+            "platform" => $platform,
+            "exists" => true,
+            "confidence" => 100,
+            "url" => $usernameUrl,
+            "foundAs" => "username+email",
+            "status" => 200
+        ];
 
-        if ($confidence > $best["confidence"]) {
-            $best = [
-                "exists" => $res["exists"] ?? null,
-                "confidence" => $confidence,
-                "url" => $url,
-                "foundAs" => $c,
-                "status" => $res["status"] ?? null
-            ];
-        }
+        continue;
     }
 
-    $results[] = array_merge([
-        "platform" => $platform
-    ], $best);
+    // 2. znaleziono po mailu
+    if ($emailExists) {
+
+        $results[] = [
+            "platform" => $platform,
+            "exists" => true,
+            "confidence" => 90,
+            "url" => $emailUrl,
+            "foundAs" => $emailName,
+            "status" => $emailRes["status"]
+        ];
+
+        continue;
+    }
+
+    // 3. znaleziono po nicku
+    if ($usernameExists) {
+
+        $results[] = [
+            "platform" => $platform,
+            "exists" => true,
+            "confidence" => 80,
+            "url" => $usernameUrl,
+            "foundAs" => $username,
+            "status" => $usernameRes["status"]
+        ];
+
+        continue;
+    }
+
+    // nic nie znaleziono
+    $results[] = [
+        "platform" => $platform,
+        "exists" => false,
+        "confidence" => 0,
+        "url" => null,
+        "foundAs" => null,
+        "status" => max(
+            $usernameRes["status"] ?? 0,
+            $emailRes["status"] ?? 0
+        )
+    ];
 }
 
     return $results;
