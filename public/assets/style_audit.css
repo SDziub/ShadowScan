@@ -788,3 +788,14 @@ a:hover {
 
     pointer-events: auto;
 }
+.profile-found {
+    color: #00d68f;
+}
+
+.profile-not-found {
+    color: #ff4d5a;
+}
+
+.profile-unknown {
+    color: #f4c95d;
+}

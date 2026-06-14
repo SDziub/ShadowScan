@@ -259,6 +259,15 @@ $security = calculateSecurityStatus(
                 </div>
 
                 <div class="card-tooltip">
+
+                    <p>
+                        <?= htmlspecialchars(
+                            $security['profiling']['message'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </p>
+
                     <?php if (
                         !empty($security['profiling']['interests'])
                     ): ?>
@@ -413,62 +422,58 @@ $security = calculateSecurityStatus(
 
             <div class="profiles-grid">
 
-                <?php foreach ($accountsResult as $account): ?>
+    <?php foreach ($accountsResult as $account): ?>
 
-                    <div class="profile-item">
+        <div class="profile-item">
 
-                        <strong>
-                            <?= htmlspecialchars(
-                                $account['platform'],
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) ?>
-                        </strong>
+            <strong>
+                <?= htmlspecialchars(
+                    $account['platform'],
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </strong>
 
-                        <?php if ($account['exists']): ?>
+            <?php if ($account['exists'] === true): ?>
 
-                            <p>
-                                ✓ Znaleziono
+    <p class="profile-found">
+        ✓ Prawdopodobnie znaleziono profil
+    </p>
 
-                                <?php if (!empty($account['foundAs'])): ?>
+    <?php if (!empty($account['url'])): ?>
 
-                                    jako:
-                                    <?= htmlspecialchars(
-                                        $account['foundAs'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>
+        <a
+            href="<?= htmlspecialchars(
+                $account['url'],
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            Otwórz profil
+        </a>
 
-                                <?php endif; ?>
-                            </p>
+    <?php endif; ?>
 
-                            <?php if (!empty($account['url'])): ?>
+<?php elseif ($account['exists'] === false): ?>
 
-                                <a
-                                    href="<?= htmlspecialchars(
-                                        $account['url'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Otwórz profil
-                                </a>
+    <p class="profile-not-found">
+        ✗ Nie znaleziono profilu
+    </p>
 
-                            <?php endif; ?>
+<?php else: ?>
 
-                        <?php else: ?>
+    <p class="profile-unknown">
+        ? Nie udało się potwierdzić
+    </p>
 
-                            <p>✗ Nie znaleziono</p>
+<?php endif; ?>
+        </div>
 
-                        <?php endif; ?>
+    <?php endforeach; ?>
 
-                    </div>
-
-                <?php endforeach; ?>
-
-            </div>
+</div>
 
         </div>
 

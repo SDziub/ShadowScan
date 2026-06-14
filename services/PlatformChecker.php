@@ -21,24 +21,56 @@ function checkGeneric(string $url): array
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_TIMEOUT => 5,
+        CURLOPT_CONNECTTIMEOUT => 3,
         CURLOPT_USERAGENT => "Mozilla/5.0"
     ]);
 
     $html = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+
     curl_close($ch);
 
-    $confidence = 50;
+    if ($html === false || !empty($error)) {
+        return [
+            "exists" => null,
+            "confidence" => 0,
+            "status" => $status
+        ];
+    }
 
-    if ($status === 404) $confidence = 0;
-    elseif ($status >= 200 && $status < 300) $confidence = 60;
-    elseif ($status === 302) $confidence = 40;
-    elseif ($status === 403) $confidence = 30;
-    elseif ($status === 429) $confidence = null; // unknown
+    if ($status === 404) {
+        return [
+            "exists" => false,
+            "confidence" => 90,
+            "status" => $status
+        ];
+    }
+
+    if ($status >= 200 && $status < 300) {
+        return [
+            "exists" => true,
+            "confidence" => 60,
+            "status" => $status
+        ];
+    }
+
+    if (
+        $status === 403 ||
+        $status === 429 ||
+        $status >= 500 ||
+        $status === 0
+    ) {
+        return [
+            "exists" => null,
+            "confidence" => 0,
+            "status" => $status
+        ];
+    }
 
     return [
-        "exists" => $confidence >= 50,
-        "confidence" => $confidence,
+        "exists" => null,
+        "confidence" => 0,
         "status" => $status
     ];
 }
@@ -111,21 +143,42 @@ function checkYouTube(string $url): array
 
 function checkTwitch(string $url): array
 {
-    $html = file_get_contents($url);
+    $ch = curl_init($url);
 
-    $confidence = 50;
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT => 5,
+        CURLOPT_USERAGENT => "Mozilla/5.0"
+    ]);
 
-    if (!$html) return ["exists" => false, "confidence" => 0];
+    $html = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    if (str_contains($html, "Sorry. Unless you've got a time machine")) {
-        $confidence = 0;
-    } else {
-        $confidence = 80;
+    curl_close($ch);
+
+    if (!$html || $status === 404) {
+        return [
+            "exists" => false,
+            "confidence" => 0,
+            "status" => $status
+        ];
+    }
+
+    if (
+        stripos($html, "Sorry. Unless you've got a time machine") !== false
+    ) {
+        return [
+            "exists" => false,
+            "confidence" => 0,
+            "status" => $status
+        ];
     }
 
     return [
-        "exists" => $confidence > 50,
-        "confidence" => $confidence
+        "exists" => $status === 200,
+        "confidence" => $status === 200 ? 80 : 20,
+        "status" => $status
     ];
 }
 
