@@ -242,7 +242,6 @@ button:hover {
     0%, 50% {
         border-color: var(--text-colour);
     }
-
     51%, 100% {
         border-color: transparent;
     }
@@ -252,23 +251,18 @@ button:hover {
     0% {
         transform: translate(0,0);
     }
-
     20% {
         transform: translate(-2%,1%);
     }
-
     40% {
         transform: translate(1%,-2%);
     }
-
     60% {
         transform: translate(-1%,2%);
     }
-
     80% {
         transform: translate(2%,-1%);
     }
-
     100% {
         transform: translate(0,0);
     }
