@@ -22,454 +22,163 @@ require_once ROOT_PATH . "services/IdentityExposureScanner.php";
 require_once ROOT_PATH . "services/SecurityCalculator.php";
 
 $emailResult = scanEmail($email);
-
-$accountsResult = scanAccounts(
-    $email,
-    $username
-);
-
-$interests = analyzeInterests(
-    $email,
-    $username
-);
-
-$identityExposure = analyzeIdentityExposure(
-    $email,
-    $username
-);
-
-$security = calculateSecurityStatus(
-    $emailResult,
-    $accountsResult,
-    $interests,
-    $identityExposure
-);
-
+$accountsResult = scanAccounts($email, $username);
+$interests = analyzeInterests($email, $username);
+$identityExposure = analyzeIdentityExposure($email, $username);
+$security = calculateSecurityStatus($emailResult, $accountsResult, $interests, $identityExposure);
 ?>
 
 <!DOCTYPE html>
 <html lang="pl">
-
 <head>
     <?php require_once ROOT_PATH . "public/includes/head_audit.php"; ?>
-
     <title>Raport - ShadowScan</title>
 </head>
 
 <body>
-
 <div class="container">
-
     <section class="left-panel">
-
         <div class="report-header">
-
-            <h1 class="typing-title">
-                Raport audytu
-            </h1>
-
-            <p>
-                Email:
-                <?= htmlspecialchars(
-                    $email,
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>
-            </p>
-
-            <p>
-                Nick:
-                <?= htmlspecialchars(
-                    $username,
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>
-            </p>
-
+            <h1 class="typing-title">Raport audytu</h1>
+            <p>Email: <?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?></p>
+            <p>Nick: <?= htmlspecialchars($username, ENT_QUOTES, 'UTF-8') ?></p>
         </div>
 
-
-        <div
-            class="main-security-status"
-            data-level="<?= (int) $security['main']['level'] ?>"
-        >
-
-            <p class="status-label">
-                Stan bezpieczeństwa danych
-            </p>
-
-            <h2>
-                <?= htmlspecialchars(
-                    $security['main']['status'],
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>
-            </h2>
-
-            <p class="main-status-message">
-                <?= htmlspecialchars(
-                    $security['main']['message'],
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>
-            </p>
-
+        <div class="main-security-status" data-level="<?= (int) $security['main']['level'] ?>">
+            <p class="status-label"> Stan bezpieczeństwa danych </p>
+            <h2> <?= htmlspecialchars($security['main']['status'], ENT_QUOTES, 'UTF-8') ?> </h2>
+            <p class="main-status-message"> <?= htmlspecialchars($security['main']['message'], ENT_QUOTES, 'UTF-8') ?></p>
         </div>
-
 
         <div class="security-grid">
-
-            <!-- WYCIEKI DANYCH -->
-
-            <article
-                class="security-card"
-                data-level="<?= (int) $security['breaches']['level'] ?>"
-                tabindex="0"
-            >
-
+            <article class="security-card" data-level="<?= (int) $security['breaches']['level'] ?>" tabindex="0">
                 <h3>Wycieki danych</h3>
-
-                <strong>
-                    <?= htmlspecialchars(
-                        $security['breaches']['status'],
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>
-                </strong>
+                <strong> <?= htmlspecialchars($security['breaches']['status'], ENT_QUOTES, 'UTF-8') ?> </strong>
 
                 <div class="status-bar">
-                    <span
-                        style="width:
-                        <?= (int) round(
-                            $security['breaches']['level'] / 3 * 100
-                        ) ?>%"
-                    ></span>
+                    <span style="width: <?= (int) round($security['breaches']['level'] / 3 * 100) ?>%"></span>
                 </div>
 
                 <div class="card-tooltip">
+                    <p> <?= htmlspecialchars($security['breaches']['message'], ENT_QUOTES, 'UTF-8') ?> </p>
+                    <p>Liczba wycieków: <?= (int) $security['breaches']['count'] ?></p>
 
-                    <p>
-                        <?= htmlspecialchars(
-                            $security['breaches']['message'],
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>
-                    </p>
-
-                    <p>
-                        Liczba wycieków:
-                        <?= (int) $security['breaches']['count'] ?>
-                    </p>
-
-                    <?php if (
-                        !empty($security['breaches']['sensitiveFields'])
-                    ): ?>
-
-                        <p>
-                            Ujawnione wrażliwe dane:
-                            <?= htmlspecialchars(
-                                implode(
-                                    ', ',
-                                    $security['breaches']['sensitiveFields']
-                                ),
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) ?>
-                        </p>
-
+                    <?php if (!empty($security['breaches']['sensitiveFields'])): ?>
+                        <p>Ujawnione wrażliwe dane: <?= htmlspecialchars(implode(', ', $security['breaches']['sensitiveFields']), ENT_QUOTES, 'UTF-8') ?> </p>
                     <?php endif; ?>
-
                 </div>
-
             </article>
 
-
-            <!-- WIDOCZNOŚĆ CYFROWA -->
-
-            <article
-                class="security-card"
-                data-level="<?= (int) $security['visibility']['level'] ?>"
-                tabindex="0"
-            >
-
+            <article class="security-card" data-level="<?= (int) $security['visibility']['level'] ?>" tabindex="0">
                 <h3>Widoczność cyfrowa</h3>
-
-                <strong>
-                    <?= htmlspecialchars(
-                        $security['visibility']['status'],
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>
-                </strong>
+                <strong> <?= htmlspecialchars($security['visibility']['status'], ENT_QUOTES, 'UTF-8') ?> </strong>
 
                 <div class="status-bar">
-                    <span
-                        style="width:
-                        <?= (int) round(
-                            $security['visibility']['level'] / 3 * 100
-                        ) ?>%"
-                    ></span>
+                    <span style="width: <?= (int) round($security['visibility']['level'] / 3 * 100) ?>%"></span>
                 </div>
 
                 <div class="card-tooltip">
-
-                    <p>
-                        <?= htmlspecialchars(
-                            $security['visibility']['message'],
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>
-                    </p>
-
-                    <p>
-                        Powiązane profile:
-                        <?= (int) $security['visibility']['count'] ?>
-                    </p>
-
+                    <p> <?= htmlspecialchars($security['visibility']['message'], ENT_QUOTES, 'UTF-8') ?></p>
+                    <p>Powiązane profile:<?= (int) $security['visibility']['count'] ?></p>
                 </div>
-
             </article>
 
-
-            <!-- PROFILOWANIE -->
-
-            <article
-                class="security-card"
-                data-level="<?= (int) $security['profiling']['level'] ?>"
-                tabindex="0"
-            >
-
+            <article class="security-card" data-level="<?= (int) $security['profiling']['level'] ?>" tabindex="0">
                 <h3>Możliwość profilowania</h3>
-
-                <strong>
-                    <?= htmlspecialchars(
-                        $security['profiling']['status'],
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>
-                </strong>
+                <strong> <?= htmlspecialchars($security['profiling']['status'], ENT_QUOTES, 'UTF-8') ?></strong>
 
                 <div class="status-bar">
-                    <span
-                        style="width:
-                        <?= (int) round(
-                            $security['profiling']['level'] / 3 * 100
-                        ) ?>%"
-                    ></span>
+                    <span style="width: <?= (int) round($security['profiling']['level'] / 3 * 100) ?>%"></span>
                 </div>
 
                 <div class="card-tooltip">
-                    <?php if (
-                        !empty($security['profiling']['interests'])
-                    ): ?>
-
+                    <?php if (!empty($security['profiling']['interests'])): ?>
                         <p>Możliwe zainteresowania:</p>
-
                         <ul>
-                            <?php foreach (
-                                $security['profiling']['interests']
-                                as $interest
-                            ): ?>
-
+                            <?php foreach ($security['profiling']['interests'] as $interest): ?>
                                 <li>
-                                    <?= htmlspecialchars(
-                                        is_array($interest)
-                                            ? $interest['name']
-                                            : $interest,
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>
+                                    <?= htmlspecialchars(is_array($interest) ? $interest['name'] : $interest, ENT_QUOTES, 'UTF-8') ?>
                                 </li>
-
                             <?php endforeach; ?>
                         </ul>
-
                     <?php else: ?>
-
-                        <p>
-                            Nie wykryto jednoznacznych zainteresowań.
-                        </p>
-
+                        <p>Nie wykryto jednoznacznych zainteresowań.</p>
                     <?php endif; ?>
-
                 </div>
-
             </article>
 
-
-            <!-- EKSPOZYCJA TOŻSAMOŚCI -->
-
-            <article
-                class="security-card"
-                data-level="<?=
-                    (int) $security['identityExposure']['level']
-                ?>"
-                tabindex="0"
-            >
-
+            <article class="security-card" data-level="<?=(int) $security['identityExposure']['level']?>" tabindex="0">
                 <h3>Ekspozycja tożsamości</h3>
-
-                <strong>
-                    <?= htmlspecialchars(
-                        $security['identityExposure']['status'],
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>
-                </strong>
+                <strong><?= htmlspecialchars($security['identityExposure']['status'], ENT_QUOTES, 'UTF-8') ?> </strong>
 
                 <div class="status-bar">
-                    <span
-                        style="width:
-                        <?= (int) round(
-                            $security['identityExposure']['level']
-                            / 3
-                            * 100
-                        ) ?>%"
-                    ></span>
+                    <span style="width: <?= (int) round( $security['identityExposure']['level']/ 3 * 100) ?>%"></span>
                 </div>
 
                 <div class="card-tooltip">
-
                     <p>
-                        <?= htmlspecialchars(
-                            $security['identityExposure']['message'],
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>
+                        <?= htmlspecialchars($security['identityExposure']['message'], ENT_QUOTES, 'UTF-8') ?>
                     </p>
 
-                    <?php if (
-                        !empty(
-                            $security['identityExposure']['signals']
-                        )
-                    ): ?>
-
+                    <?php if (!empty($security['identityExposure']['signals'])): ?>
                         <ul>
-                            <?php foreach (
-                                $security['identityExposure']['signals']
-                                as $signal
-                            ): ?>
-
+                            <?php foreach ($security['identityExposure']['signals'] as $signal): ?>
                                 <li>
-                                    <?= htmlspecialchars(
-                                        $signal['message'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>
+                                    <?= htmlspecialchars($signal['message'], ENT_QUOTES, 'UTF-8') ?>
                                 </li>
-
                             <?php endforeach; ?>
                         </ul>
-
                     <?php else: ?>
-
                         <p>
                             Nie wykryto informacji ułatwiających
                             identyfikację.
                         </p>
-
                     <?php endif; ?>
-
                 </div>
-
             </article>
-
         </div>
-
 
         <section class="recommendations">
-
             <h2>Rekomendacje</h2>
-
             <ul>
-                <?php foreach (
-                    $security['recommendations']
-                    as $recommendation
-                ): ?>
-
+                <?php foreach ($security['recommendations'] as $recommendation): ?>
                     <li>
-                        <?= htmlspecialchars(
-                            $recommendation,
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>
+                        <?= htmlspecialchars($recommendation, ENT_QUOTES, 'UTF-8') ?>
                     </li>
-
                 <?php endforeach; ?>
             </ul>
-
         </section>
-
     </section>
-
 
  <section class="right-panel">
+    <div class="content">
+        <h2 class="typing-heading">Gdzie znaleziono konta?</h2>
 
-        <div class="content">
+        <div class="profiles-grid">
+            <?php foreach ($accountsResult as $account): ?>
 
-            <h2 class="typing-heading">
-                Gdzie znaleziono konta?
-            </h2>
+            <div class="profile-item">
+                <strong><?= htmlspecialchars($account['platform'], ENT_QUOTES, 'UTF-8') ?></strong>
+                <?php if ($account['exists'] === true): ?>
 
-            <div class="profiles-grid">
+                    <p class="profile-found">
+                        Prawdopodobnie znaleziono profil
+                    </p>
 
-    <?php foreach ($accountsResult as $account): ?>
+                <?php if (!empty($account['url'])): ?>
+                    <a href="<?= htmlspecialchars($account['url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Otwórz profil</a>
+                <?php endif; ?>
 
-        <div class="profile-item">
-
-            <strong>
-                <?= htmlspecialchars(
-                    $account['platform'],
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>
-            </strong>
-
-            <?php if ($account['exists'] === true): ?>
-
-    <p class="profile-found">
-        Prawdopodobnie znaleziono profil
-    </p>
-
-    <?php if (!empty($account['url'])): ?>
-
-        <a
-            href="<?= htmlspecialchars(
-                $account['url'],
-                ENT_QUOTES,
-                'UTF-8'
-            ) ?>"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            Otwórz profil
-        </a>
-
-    <?php endif; ?>
-
-<?php elseif ($account['exists'] === false): ?>
-
-    <p class="profile-not-found">
-        Nie znaleziono profilu
-    </p>
-
-<?php else: ?>
-
-    <p class="profile-unknown">
-        Nie udało się potwierdzić
-    </p>
-
-<?php endif; ?>
+                <?php elseif ($account['exists'] === false): ?>
+                    <p class="profile-not-found">Nie znaleziono profilu</p>
+                <?php else: ?>
+                    <p class="profile-unknown">Nie udało się potwierdzić</p>
+                 <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
         </div>
-
-    <?php endforeach; ?>
-
-</div>
-
-        </div>
-
-    </section>
-
+    </div>
+</section>
 </div>
 
 
@@ -478,7 +187,6 @@ const securityCards = document.querySelectorAll(".security-card");
 
 function toggleCard(selectedCard) {
     const wasOpen = selectedCard.classList.contains("is-open");
-
     securityCards.forEach((card) => {
         card.classList.remove("is-open");
     });
@@ -501,6 +209,5 @@ securityCards.forEach((card) => {
     });
 });
 </script>
-
 </body>
 </html>

@@ -12,40 +12,26 @@ require_once "path.php";
 
 <body>
 <div class="container">
-
     <section class="left-panel">
         <h1 class="typing-title">ShadowScan</h1>
         <p class="terminal-subtitle"> digital footprint audit</p>
 
         <form id="scanForm" action="audit.php" method="POST">
             <label>Email</label>
-            <input
-                type="email"
-                name="email"
-                placeholder="twój_mail@example.com"
-                required
-            >
+            <input type="email" name="email" placeholder="twój_mail@example.com" required>
 
             <label>Nick</label>
-            <input
-                type="text"
-                name="username"
-                placeholder="Twój_Nick"
-                required
-            >
+            <input type="text" name="username" placeholder="Twój_Nick" required>
 
-            <button type="submit">
-                Skanuj
-            </button>
+            <button type="submit">Skanuj</button>
         </form>
     </section>
 
     <section class="right-panel">
-    <div class="content">
-        <?php include(ROOT_PATH ."public/includes/text.php"); ?>
-    </div>
+        <div class="content">
+            <?php include(ROOT_PATH ."public/includes/text.php"); ?>
+        </div>
     </section>
-
 </div>
 
 <div id="scanOverlay" class="scan-overlay hidden">
@@ -55,19 +41,17 @@ require_once "path.php";
         <div class="progress-bar">
             <div id="progressFill"></div>
         </div>
-
         <p id="progressText">0%</p>
     </div>
 </div>
 
 <script>
-document.getElementById("scanForm").addEventListener("submit", function (e) {
+    document.getElementById("scanForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
     const overlay = document.getElementById("scanOverlay");
     const bar = document.getElementById("progressFill");
     const text = document.getElementById("progressText");
-
     overlay.classList.remove("hidden");
 
     let progress = 0;
@@ -81,14 +65,11 @@ document.getElementById("scanForm").addEventListener("submit", function (e) {
         if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
-
-   
             document.getElementById("scanForm").submit();
         }
 
         bar.style.width = progress + "%";
         text.textContent = Math.floor(progress) + "%";
-
     }, intervalTime);
 });
 </script>
