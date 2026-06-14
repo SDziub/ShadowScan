@@ -183,7 +183,7 @@ a:hover {
 
 .main-security-status h2 {
     margin: 0 0 8px;
-    padding: 0; 
+    padding: 0;
 
     border: none;
 
@@ -788,6 +788,14 @@ a:hover {
 
     pointer-events: auto;
 }
-.profile-found, .profile-not-found, .profile-unknown {
-    color: var(--h1-colour);
+.profile-found {
+    color: #00d68f;
+}
+
+.profile-not-found {
+    color: #ff4d5a;
+}
+
+.profile-unknown {
+    color: #f4c95d;
 }

@@ -47,13 +47,15 @@ function calculateSecurityStatus(
     $hasSensitiveLeak = !empty($sensitiveFields);
 
     $foundAccounts = count(
-        array_filter(
-            $accountsResult,
-            function (array $account): bool {
-                return $account['exists'] ?? false;
-            }
-        )
-    );
+    array_filter(
+        $accountsResult,
+        function (array $account): bool {
+            return
+                ($account['exists'] ?? null) === true &&
+                ($account['confidence'] ?? 0) >= 80;
+        }
+    )
+);
 
     $interestCount = count($interests);
 

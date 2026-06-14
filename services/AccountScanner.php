@@ -1,57 +1,68 @@
 <?php
 
-require_once ROOT_PATH . "services/PlatformChecker.php";
+require_once ROOT_PATH . 'services/PlatformChecker.php';
 
-function scanAccounts(string $email, string $username): array
-{
-    $emailName = explode('@', $email)[0];
+function scanAccounts(
+    string $email,
+    string $username
+): array {
+    $emailName = explode('@', $email)[0] ?? '';
+
+    /*
+     * Sprawdzamy tylko dwie sensowne wartości:
+     * - dokładnie podany nick,
+     * - część adresu e-mail przed znakiem @.
+     */
+    $candidates = array_values(
+        array_unique(
+            array_filter(
+                [
+                    trim($username),
+                    trim($emailName)
+                ],
+                static fn(string $value): bool => $value !== ''
+            )
+        )
+    );
 
     $platforms = [
-        "GitHub"      => "https://github.com/%s",
-        "YouTube"     => "https://www.youtube.com/@%s",
-        "Twitch"      => "https://www.twitch.tv/%s",
-        "X / Twitter" => "https://x.com/%s",
-        "TikTok"      => "https://www.tiktok.com/@%s",
-        "Spotify"     => "https://open.spotify.com/user/%s"
+        'GitHub' => 'https://github.com/%s',
+        'YouTube' => 'https://www.youtube.com/@%s',
+        'Reddit' => 'https://www.reddit.com/user/%s/',
+        'Twitch' => 'https://www.twitch.tv/%s',
+        'X / Twitter' => 'https://x.com/%s',
+        'TikTok' => 'https://www.tiktok.com/@%s',
+        'Spotify' => 'https://open.spotify.com/user/%s'
     ];
 
-    $multi = curl_multi_init();
-    $handles = [];
+    $multiHandle = curl_multi_init();
+    $requests = [];
 
     foreach ($platforms as $platform => $pattern) {
+        foreach ($candidates as $candidate) {
+            $url = sprintf(
+                $pattern,
+                rawurlencode($candidate)
+            );
 
-        $usernameUrl = sprintf($pattern, rawurlencode($username));
-        $emailUrl    = sprintf($pattern, rawurlencode($emailName));
+            $handle = curl_init();
 
-        foreach ([
-            'username' => $usernameUrl,
-            'email'    => $emailUrl
-        ] as $type => $url) {
+            curl_setopt_array(
+                $handle,
+                buildPlatformCurlOptions($url, $platform)
+            );
 
-            $ch = curl_init();
+            curl_multi_add_handle($multiHandle, $handle);
 
-$options = [
-    CURLOPT_URL => $url,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_TIMEOUT => 3,
-    CURLOPT_CONNECTTIMEOUT => 1,
-    CURLOPT_USERAGENT => 'Mozilla/5.0'
-];
+            $handleId = is_object($handle)
+                ? spl_object_id($handle)
+                : (int) $handle;
 
-if ($platform !== 'Twitch') {
-    $options[CURLOPT_NOBODY] = true;
-}
-
-curl_setopt_array($ch, $options);
-
-            curl_multi_add_handle($multi, $ch);
-
-            $handles[(int)$ch] = [
-                'handle'   => $ch,
+            $requests[$handleId] = [
+                'handle' => $handle,
                 'platform' => $platform,
-                'type'     => $type,
-                'url'      => $url
+                'candidate' => $candidate,
+                'url' => $url
             ];
         }
     }
@@ -59,109 +70,161 @@ curl_setopt_array($ch, $options);
     $running = null;
 
     do {
-        curl_multi_exec($multi, $running);
-        curl_multi_select($multi, 1);
-    } while ($running > 0);
+        $multiStatus = curl_multi_exec(
+            $multiHandle,
+            $running
+        );
 
-    $responses = [];
+        if ($running > 0) {
+            $selected = curl_multi_select(
+                $multiHandle,
+                0.5
+            );
 
-    foreach ($handles as $data) {
+            /*
+             * curl_multi_select może czasem zwrócić -1.
+             * Krótkie uśpienie zapobiega wtedy pętli obciążającej CPU.
+             */
+            if ($selected === -1) {
+                usleep(10000);
+            }
+        }
+    } while (
+        $running > 0 &&
+        $multiStatus === CURLM_OK
+    );
 
-$status = curl_getinfo($data['handle'], CURLINFO_HTTP_CODE);
+    $platformChecks = [];
 
-$exists = ($status >= 200 && $status < 300);
+    foreach ($requests as $request) {
+        $handle = $request['handle'];
 
-if ($data['platform'] === 'Twitch') {
+        $html = curl_multi_getcontent($handle);
 
-    $html = curl_multi_getcontent($data['handle']);
+        $status = (int) curl_getinfo(
+            $handle,
+            CURLINFO_HTTP_CODE
+        );
 
-    if (
-        str_contains($html, 'Sorry. Unless you\'ve got a time machine')
-        || str_contains($html, 'This channel is unavailable')
-    ) {
-        $exists = false;
+        $finalUrl = (string) curl_getinfo(
+            $handle,
+            CURLINFO_EFFECTIVE_URL
+        );
+
+        $error = curl_error($handle);
+
+        $check = checkCompletedPlatformResponse(
+            $request['platform'],
+            $request['candidate'],
+            is_string($html) ? $html : '',
+            $status,
+            $error,
+            $finalUrl
+        );
+
+        $platformChecks[$request['platform']][] = [
+            'platform' => $request['platform'],
+            'exists' => $check['exists'] ?? null,
+            'confidence' => $check['confidence'] ?? 0,
+            'status' => $check['status'] ?? $status,
+            'url' => $request['url'],
+            'foundAs' => $request['candidate']
+        ];
+
+        curl_multi_remove_handle(
+            $multiHandle,
+            $handle
+        );
+
+        curl_close($handle);
     }
-}
 
-$responses[$data['platform']][$data['type']] = [
-    'status' => $status,
-    'exists' => $exists
-];
-        curl_multi_remove_handle($multi, $data['handle']);
-        curl_close($data['handle']);
-    }
-
-    curl_multi_close($multi);
+    curl_multi_close($multiHandle);
 
     $results = [];
 
     foreach ($platforms as $platform => $pattern) {
+        $checks = $platformChecks[$platform] ?? [];
 
-        $usernameRes = $responses[$platform]['username'] ?? [
-            'exists' => false,
-            'status' => 0
-        ];
+        $confirmedResults = array_values(
+            array_filter(
+                $checks,
+                static function (array $result): bool {
+                    return
+                        ($result['exists'] ?? null) === true &&
+                        ($result['confidence'] ?? 0) >= 80;
+                }
+            )
+        );
 
-        $emailRes = $responses[$platform]['email'] ?? [
-            'exists' => false,
-            'status' => 0
-        ];
+        if (!empty($confirmedResults)) {
+            usort(
+                $confirmedResults,
+                static function (
+                    array $first,
+                    array $second
+                ): int {
+                    return
+                        ($second['confidence'] ?? 0)
+                        <=>
+                        ($first['confidence'] ?? 0);
+                }
+            );
 
-        $usernameUrl = sprintf($pattern, rawurlencode($username));
-        $emailUrl    = sprintf($pattern, rawurlencode($emailName));
-
-        if ($usernameRes['exists'] && $emailRes['exists']) {
-
-            $results[] = [
-                'platform'   => $platform,
-                'exists'     => true,
-                'confidence' => 100,
-                'url'        => $usernameUrl,
-                'foundAs'    => 'username+email',
-                'status'     => 200
-            ];
-
+            $results[] = $confirmedResults[0];
             continue;
         }
 
-        if ($emailRes['exists']) {
+        $unknownResults = array_values(
+            array_filter(
+                $checks,
+                static function (array $result): bool {
+                    return
+                        ($result['exists'] ?? null) === null;
+                }
+            )
+        );
 
-            $results[] = [
-                'platform'   => $platform,
-                'exists'     => true,
-                'confidence' => 90,
-                'url'        => $emailUrl,
-                'foundAs'    => $emailName,
-                'status'     => $emailRes['status']
-            ];
+        if (!empty($unknownResults)) {
+            $unknown = $unknownResults[0];
 
+            /*
+             * Przy wyniku niejednoznacznym nie pokazujemy linku,
+             * ponieważ mógłby prowadzić do strony błędu.
+             */
+            $unknown['url'] = null;
+            $unknown['foundAs'] = null;
+
+            $results[] = $unknown;
             continue;
         }
 
-        if ($usernameRes['exists']) {
+        $notFoundResults = array_values(
+            array_filter(
+                $checks,
+                static function (array $result): bool {
+                    return
+                        ($result['exists'] ?? null) === false;
+                }
+            )
+        );
 
-            $results[] = [
-                'platform'   => $platform,
-                'exists'     => true,
-                'confidence' => 80,
-                'url'        => $usernameUrl,
-                'foundAs'    => $username,
-                'status'     => $usernameRes['status']
-            ];
+        if (!empty($notFoundResults)) {
+            $notFound = $notFoundResults[0];
+            $notFound['url'] = null;
+            $notFound['foundAs'] = null;
 
+            $results[] = $notFound;
             continue;
         }
 
         $results[] = [
-            'platform'   => $platform,
-            'exists'     => false,
+            'platform' => $platform,
+            'exists' => null,
             'confidence' => 0,
-            'url'        => null,
-            'foundAs'    => null,
-            'status'     => max(
-                $usernameRes['status'],
-                $emailRes['status']
-            )
+            'status' => null,
+            'url' => null,
+            'foundAs' => null
         ];
     }
 

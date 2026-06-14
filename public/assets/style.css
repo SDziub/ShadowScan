@@ -299,7 +299,7 @@ button:hover {
     position: absolute;
     top: 0;
     left: 0;
-    animation: scanMove 0.35s linear infinite;
+    animation: scanMove 0.8s linear infinite;
     box-shadow: 0 0 10px #00ff9d;
 }
 
@@ -322,5 +322,5 @@ button:hover {
     height: 100%;
     width: 0%;
     background: #00ff9d;
-    transition: width 0.03s linear;
+    transition: width 0.1s linear;
 }
