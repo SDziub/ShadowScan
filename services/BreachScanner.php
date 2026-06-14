@@ -24,7 +24,8 @@ function fetchIntelX(string $email): array
             "Content-Type: application/json"
         ],
         CURLOPT_POSTFIELDS => json_encode($payload),
-        CURLOPT_TIMEOUT => 15
+        CURLOPT_TIMEOUT => 4,
+        CURLOPT_CONNECTTIMEOUT => 1
     ]);
 
     $response = curl_exec($ch);
@@ -67,7 +68,8 @@ function getBreaches(string $email): array
 
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 10,
+        CURLOPT_TIMEOUT => 3,
+        CURLOPT_CONNECTTIMEOUT => 1,
         CURLOPT_HTTPHEADER => [
             "X-API-Key: {$apiKey}"
         ]
