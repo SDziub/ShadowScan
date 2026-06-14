@@ -3,11 +3,9 @@
 function fetchIntelX(string $email): array
 {
     $apiKey = getenv("INTELX_API_KEY");
-
     if (!$apiKey) return [];
 
     $url = "https://2.intelx.io/intelligent/search";
-
     $payload = [
         "term" => $email,
         "maxresults" => 10,
@@ -15,7 +13,6 @@ function fetchIntelX(string $email): array
     ];
 
     $ch = curl_init($url);
-
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
@@ -30,17 +27,11 @@ function fetchIntelX(string $email): array
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
     curl_close($ch);
-
     if ($httpCode !== 200 || !$response) return [];
-
     $data = json_decode($response, true);
-
     if (!is_array($data)) return [];
-
     $results = [];
-
     foreach (($data['records'] ?? []) as $item) {
         $results[] = [
             "source" => [
@@ -53,19 +44,14 @@ function fetchIntelX(string $email): array
             ]
         ];
     }
-
     return $results;
 }
-
 
 function getBreaches(string $email): array
 {
     $apiKey = getenv("LEAKCHECK_API_KEY");
-
     $url = "https://leakcheck.io/api/public?check=" . urlencode($email);
-
     $ch = curl_init($url);
-
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 3,
@@ -74,21 +60,14 @@ function getBreaches(string $email): array
             "X-API-Key: {$apiKey}"
         ]
     ]);
-
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
     curl_close($ch);
-
     $breaches = [];
-
     if ($response !== false && $httpCode === 200) {
-
         $data = json_decode($response, true);
-
         if (is_array($data) && !empty($data['result'])) {
             foreach ($data['result'] as $item) {
-
                 $breaches[] = [
                     "source" => [
                         "name" => $item['source']['name'] ?? 'LeakCheck',
@@ -100,9 +79,7 @@ function getBreaches(string $email): array
             }
         }
     }
-
     $intelx = fetchIntelX($email);
-
     if (!empty($intelx)) {
         $breaches = array_merge($breaches, $intelx);
     }

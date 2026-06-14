@@ -13,9 +13,7 @@ function getSensitiveLeakInformation(array $breaches): array
         'date of birth',
         'ip address'
     ];
-
     $sensitiveFields = [];
-
     foreach ($breaches as $breach) {
         foreach (($breach['fields'] ?? []) as $field) {
             $normalizedField = strtolower(trim((string) $field));
@@ -28,7 +26,6 @@ function getSensitiveLeakInformation(array $breaches): array
             }
         }
     }
-
     return array_values(array_unique($sensitiveFields));
 }
 
@@ -40,30 +37,23 @@ function calculateSecurityStatus(
 ): array {
     $breaches = $emailResult['breaches'] ?? [];
     $breachCount = count($breaches);
-
     $scanSuccess = $emailResult['scanSuccess'] ?? true;
-
     $sensitiveFields = getSensitiveLeakInformation($breaches);
     $hasSensitiveLeak = !empty($sensitiveFields);
-
     $foundAccounts = count(
-        array_filter(
-            $accountsResult,
-            function (array $account): bool {
-                return $account['exists'] ?? false;
-            }
-        )
-    );
-
+    array_filter(
+        $accountsResult,
+        function (array $account): bool {
+            return
+                ($account['exists'] ?? null) === true &&
+                ($account['confidence'] ?? 0) >= 80;
+        }
+    )
+);
     $interestCount = count($interests);
-
     $identitySignals = $identityExposure['signals'] ?? [];
     $identitySignalCount = count($identitySignals);
     $identityScore = $identityExposure['score'] ?? 0;
-
-    /*
-     * 1. WYCIEKI DANYCH
-     */
 
     if (!$scanSuccess) {
         $breachStatus = 'Nieznany';
@@ -83,7 +73,6 @@ function calculateSecurityStatus(
     } else {
         $breachStatus = 'Zagrożony';
         $breachLevel = 3;
-
         if ($hasSensitiveLeak) {
             $breachMessage =
                 'W wykrytych wyciekach mogły zostać ujawnione wrażliwe dane, takie jak hasło, telefon, adres lub adres IP.';
@@ -92,10 +81,6 @@ function calculateSecurityStatus(
                 'Adres e-mail występuje w kilku publicznie znanych wyciekach danych.';
         }
     }
-
-    /*
-     * 2. WIDOCZNOŚĆ CYFROWA
-     */
 
     if ($foundAccounts === 0) {
         $visibilityStatus = 'Bezpieczny';
@@ -114,10 +99,6 @@ function calculateSecurityStatus(
             'Ten sam nick lub część adresu e-mail występuje na wielu platformach, co ułatwia powiązanie kont.';
     }
 
-    /*
-     * 3. MOŻLIWOŚĆ PROFILOWANIA
-     */
-
     if ($interestCount === 0) {
         $profilingStatus = 'Bezpieczny';
         $profilingLevel = 1;
@@ -129,10 +110,6 @@ function calculateSecurityStatus(
         $profilingStatus = 'Zagrożony';
         $profilingLevel = 3;
     }
-
-    /*
-     * 4. EKSPOZYCJA TOŻSAMOŚCI
-     */
 
     if ($identitySignalCount === 0) {
         $identityStatus = 'Bezpieczny';
@@ -151,17 +128,12 @@ function calculateSecurityStatus(
             'Podane dane zawierają kilka wskazówek mogących ułatwić identyfikację użytkownika.';
     }
 
-    /*
-     * 5. STATUS GŁÓWNY
-     */
-
     $highestLevel = max(
         $breachLevel,
         $visibilityLevel,
         $profilingLevel,
         $identityLevel
     );
-
     if ($breachLevel === 3) {
         $mainStatus = 'ZAGROŻONY';
         $mainLevel = 3;
@@ -184,39 +156,29 @@ function calculateSecurityStatus(
             'Nie wykryto znanych wycieków ani istotnych sygnałów zwiększonej ekspozycji.';
     }
 
-    /*
-     * 6. REKOMENDACJE
-     */
-
     $recommendations = [];
-
     if ($breachLevel >= 2) {
         $recommendations[] =
             'Zmień hasło w serwisach powiązanych z tym adresem e-mail.';
         $recommendations[] =
             'Włącz uwierzytelnianie dwuskładnikowe.';
     }
-
     if ($visibilityLevel === 3) {
         $recommendations[] =
             'Rozważ stosowanie różnych nazw użytkownika na różnych platformach.';
     }
-
     if ($profilingLevel >= 2) {
         $recommendations[] =
             'Unikaj umieszczania zainteresowań bezpośrednio w nicku lub adresie e-mail.';
     }
-
     if ($identityLevel >= 2) {
         $recommendations[] =
             'Usuń z nicku lub e-maila rok, lokalizację albo inne informacje osobiste.';
     }
-
     if (empty($recommendations)) {
         $recommendations[] =
             'Kontynuuj stosowanie różnych haseł oraz uwierzytelniania dwuskładnikowego.';
     }
-
     return [
         'main' => [
             'status' => $mainStatus,

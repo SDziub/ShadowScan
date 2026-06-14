@@ -2,17 +2,8 @@
 
 require_once ROOT_PATH . 'services/PlatformChecker.php';
 
-function scanAccounts(
-    string $email,
-    string $username
-): array {
+function scanAccounts(string $email, string $username): array {
     $emailName = explode('@', $email)[0] ?? '';
-
-    /*
-     * Sprawdzamy tylko dwie sensowne wartości:
-     * - dokładnie podany nick,
-     * - część adresu e-mail przed znakiem @.
-     */
     $candidates = array_values(
         array_unique(
             array_filter(
@@ -24,10 +15,10 @@ function scanAccounts(
             )
         )
     );
-
     $platforms = [
         'GitHub' => 'https://github.com/%s',
         'YouTube' => 'https://www.youtube.com/@%s',
+        'Reddit' => 'https://www.reddit.com/user/%s/',
         'Twitch' => 'https://www.twitch.tv/%s',
         'X / Twitter' => 'https://x.com/%s',
         'TikTok' => 'https://www.tiktok.com/@%s',
@@ -36,27 +27,15 @@ function scanAccounts(
 
     $multiHandle = curl_multi_init();
     $requests = [];
-
     foreach ($platforms as $platform => $pattern) {
         foreach ($candidates as $candidate) {
-            $url = sprintf(
-                $pattern,
-                rawurlencode($candidate)
-            );
-
+            $url = sprintf($pattern, rawurlencode($candidate));
             $handle = curl_init();
 
-            curl_setopt_array(
-                $handle,
-                buildPlatformCurlOptions($url, $platform)
-            );
-
+            curl_setopt_array($handle, buildPlatformCurlOptions($url, $platform));
             curl_multi_add_handle($multiHandle, $handle);
 
-            $handleId = is_object($handle)
-                ? spl_object_id($handle)
-                : (int) $handle;
-
+            $handleId = is_object($handle) ? spl_object_id($handle) : (int) $handle;
             $requests[$handleId] = [
                 'handle' => $handle,
                 'platform' => $platform,
@@ -65,53 +44,25 @@ function scanAccounts(
             ];
         }
     }
-
     $running = null;
-
     do {
-        $multiStatus = curl_multi_exec(
-            $multiHandle,
-            $running
-        );
-
+        $multiStatus = curl_multi_exec($multiHandle, $running);
         if ($running > 0) {
-            $selected = curl_multi_select(
-                $multiHandle,
-                0.5
-            );
-
-            /*
-             * curl_multi_select może czasem zwrócić -1.
-             * Krótkie uśpienie zapobiega wtedy pętli obciążającej CPU.
-             */
+            $selected = curl_multi_select($multiHandle, 0.5);
             if ($selected === -1) {
                 usleep(10000);
             }
         }
-    } while (
-        $running > 0 &&
-        $multiStatus === CURLM_OK
-    );
+    } while ($running > 0 && $multiStatus === CURLM_OK);
 
     $platformChecks = [];
-
     foreach ($requests as $request) {
         $handle = $request['handle'];
-
         $html = curl_multi_getcontent($handle);
 
-        $status = (int) curl_getinfo(
-            $handle,
-            CURLINFO_HTTP_CODE
-        );
-
-        $finalUrl = (string) curl_getinfo(
-            $handle,
-            CURLINFO_EFFECTIVE_URL
-        );
-
+        $status = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);
+        $finalUrl = (string) curl_getinfo($handle, CURLINFO_EFFECTIVE_URL);
         $error = curl_error($handle);
-
         $check = checkCompletedPlatformResponse(
             $request['platform'],
             $request['candidate'],
@@ -120,7 +71,6 @@ function scanAccounts(
             $error,
             $finalUrl
         );
-
         $platformChecks[$request['platform']][] = [
             'platform' => $request['platform'],
             'exists' => $check['exists'] ?? null,
@@ -129,22 +79,14 @@ function scanAccounts(
             'url' => $request['url'],
             'foundAs' => $request['candidate']
         ];
-
-        curl_multi_remove_handle(
-            $multiHandle,
-            $handle
-        );
-
+        curl_multi_remove_handle($multiHandle, $handle);
         curl_close($handle);
     }
 
     curl_multi_close($multiHandle);
-
     $results = [];
-
     foreach ($platforms as $platform => $pattern) {
         $checks = $platformChecks[$platform] ?? [];
-
         $confirmedResults = array_values(
             array_filter(
                 $checks,
@@ -155,25 +97,17 @@ function scanAccounts(
                 }
             )
         );
-
         if (!empty($confirmedResults)) {
             usort(
                 $confirmedResults,
-                static function (
-                    array $first,
-                    array $second
-                ): int {
+                static function (array $first, array $second) : int {
                     return
-                        ($second['confidence'] ?? 0)
-                        <=>
-                        ($first['confidence'] ?? 0);
+                        ($second['confidence'] ?? 0) <=> ($first['confidence'] ?? 0);
                 }
             );
-
             $results[] = $confirmedResults[0];
             continue;
         }
-
         $unknownResults = array_values(
             array_filter(
                 $checks,
@@ -183,21 +117,13 @@ function scanAccounts(
                 }
             )
         );
-
         if (!empty($unknownResults)) {
             $unknown = $unknownResults[0];
-
-            /*
-             * Przy wyniku niejednoznacznym nie pokazujemy linku,
-             * ponieważ mógłby prowadzić do strony błędu.
-             */
             $unknown['url'] = null;
             $unknown['foundAs'] = null;
-
             $results[] = $unknown;
             continue;
         }
-
         $notFoundResults = array_values(
             array_filter(
                 $checks,
@@ -207,16 +133,13 @@ function scanAccounts(
                 }
             )
         );
-
         if (!empty($notFoundResults)) {
             $notFound = $notFoundResults[0];
             $notFound['url'] = null;
             $notFound['foundAs'] = null;
-
             $results[] = $notFound;
             continue;
         }
-
         $results[] = [
             'platform' => $platform,
             'exists' => null,
@@ -226,6 +149,5 @@ function scanAccounts(
             'foundAs' => null
         ];
     }
-
     return $results;
 }

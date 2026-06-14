@@ -9,10 +9,7 @@ function platformNeedsBody(string $platform): bool
     );
 }
 
-function buildPlatformCurlOptions(
-    string $url,
-    string $platform
-): array {
+function buildPlatformCurlOptions(string $url, string $platform): array {
     $options = [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
@@ -22,16 +19,9 @@ function buildPlatformCurlOptions(
         CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         CURLOPT_ENCODING => ''
     ];
-
-    /*
-     * Dla GitHuba i platform ogólnych wystarczą nagłówki.
-     * YouTube, Reddit i Twitch wymagają pobrania HTML,
-     * ponieważ szukamy w nim sygnałów istnienia profilu.
-     */
     if (!platformNeedsBody($platform)) {
         $options[CURLOPT_NOBODY] = true;
     }
-
     return $options;
 }
 
@@ -55,15 +45,9 @@ function checkCompletedPlatformResponse(
     if ($error !== '' || $status === 0) {
         return unknownPlatformResult($status);
     }
-
-    if (
-        $status === 403 ||
-        $status === 429 ||
-        $status >= 500
-    ) {
+    if ($status === 403 || $status === 429 || $status >= 500) {
         return unknownPlatformResult($status);
     }
-
     return match ($platform) {
         'GitHub' => interpretGitHubResponse($status),
         'YouTube' => interpretYouTubeResponse($html, $status),
@@ -103,14 +87,10 @@ function interpretGitHubResponse(int $status): array
             'status' => $status
         ];
     }
-
     return unknownPlatformResult($status);
 }
 
-function interpretYouTubeResponse(
-    string $html,
-    int $status
-): array {
+function interpretYouTubeResponse(string $html, int $status): array {
     if ($status === 404) {
         return [
             'exists' => false,
@@ -118,14 +98,12 @@ function interpretYouTubeResponse(
             'status' => $status
         ];
     }
-
     $notFoundSignals = [
         'This channel does not exist',
         '404 Not Found',
         "This page isn't available",
         'Nie znaleziono tego kanału'
     ];
-
     foreach ($notFoundSignals as $signal) {
         if (stripos($html, $signal) !== false) {
             return [
@@ -135,14 +113,12 @@ function interpretYouTubeResponse(
             ];
         }
     }
-
     $channelSignals = [
         '"channelId"',
         '"vanityChannelUrl"',
         '"canonicalBaseUrl"',
         'ytInitialData'
     ];
-
     foreach ($channelSignals as $signal) {
         if (stripos($html, $signal) !== false) {
             return [
@@ -152,57 +128,6 @@ function interpretYouTubeResponse(
             ];
         }
     }
-
-    return unknownPlatformResult($status);
-}
-
-function interpretRedditResponse(
-    string $html,
-    int $status
-): array {
-    if ($status === 404) {
-        return [
-            'exists' => false,
-            'confidence' => 100,
-            'status' => $status
-        ];
-    }
-
-    $notFoundSignals = [
-        'Sorry, nobody on Reddit goes by that name',
-        'page not found',
-        'has been deleted',
-        'isn’t on Reddit',
-        "isn't on Reddit"
-    ];
-
-    foreach ($notFoundSignals as $signal) {
-        if (stripos($html, $signal) !== false) {
-            return [
-                'exists' => false,
-                'confidence' => 95,
-                'status' => $status
-            ];
-        }
-    }
-
-    $profileSignals = [
-        'karma',
-        'redditor',
-        'profile',
-        'data-testid="profile'
-    ];
-
-    foreach ($profileSignals as $signal) {
-        if (stripos($html, $signal) !== false) {
-            return [
-                'exists' => true,
-                'confidence' => 80,
-                'status' => $status
-            ];
-        }
-    }
-
     return unknownPlatformResult($status);
 }
 
@@ -218,13 +143,11 @@ function interpretTwitchResponse(
             'status' => $status
         ];
     }
-
     $notFoundSignals = [
         "Sorry. Unless you've got a time machine",
         'This channel is unavailable',
         'Content is unavailable'
     ];
-
     foreach ($notFoundSignals as $signal) {
         if (stripos($html, $signal) !== false) {
             return [
@@ -234,20 +157,12 @@ function interpretTwitchResponse(
             ];
         }
     }
-
-    /*
-     * Twitch często zwraca kod 200 także dla pustego szablonu.
-     * Potwierdzamy profil tylko, gdy HTML zawiera nick
-     * oraz metadane typowe dla strony kanału.
-     */
     $containsUsername =
         $username !== '' &&
         stripos($html, $username) !== false;
-
     $containsProfileMetadata =
         stripos($html, 'og:title') !== false ||
         stripos($html, 'twitter:title') !== false;
-
     if (
         $status === 200 &&
         $containsUsername &&
@@ -259,14 +174,10 @@ function interpretTwitchResponse(
             'status' => $status
         ];
     }
-
     return unknownPlatformResult($status);
 }
 
-function interpretGenericResponse(
-    int $status,
-    string $finalUrl
-): array {
+function interpretGenericResponse(int $status, string $finalUrl): array {
     if ($status === 404) {
         return [
             'exists' => false,
@@ -275,12 +186,6 @@ function interpretGenericResponse(
             'finalUrl' => $finalUrl
         ];
     }
-
-    /*
-     * Sam kod 2xx nie potwierdza istnienia profilu.
-     * X, TikTok i Spotify często zwracają kod 200
-     * również dla strony logowania lub strony błędu.
-     */
     if ($status >= 200 && $status < 300) {
         return [
             'exists' => null,
@@ -289,6 +194,5 @@ function interpretGenericResponse(
             'finalUrl' => $finalUrl
         ];
     }
-
     return unknownPlatformResult($status);
 }

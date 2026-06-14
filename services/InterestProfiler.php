@@ -3,22 +3,17 @@
 function normalizeProfileText(string $text): string
 {
     $text = strtolower($text);
-
     $text = preg_replace('/[_\-.0-9]+/', ' ', $text);
     $text = preg_replace('/[^a-ząćęłńóśźż ]/u', '', $text);
-
     return trim($text);
 }
 
 function analyzeInterests(string $email, string $username): array
 {
     $emailName = explode('@', $email)[0] ?? '';
-
     $usernameText = normalizeProfileText($username);
     $emailText = normalizeProfileText($emailName);
-
     $text = $usernameText . ' ' . $emailText;
-
     $interestKeywords = [
         'programowanie' => [
             'developer',
@@ -146,7 +141,6 @@ function analyzeInterests(string $email, string $username): array
     ];
 
     $scores = [];
-
     foreach ($interestKeywords as $interest => $keywords) {
         $scores[$interest] = 0;
 
@@ -158,7 +152,6 @@ function analyzeInterests(string $email, string $username): array
     }
 
     $interests = [];
-
     foreach ($scores as $interest => $score) {
         if ($score > 0) {
             $interests[] = [
@@ -171,7 +164,6 @@ function analyzeInterests(string $email, string $username): array
     usort($interests, function (array $a, array $b): int {
         return $b['score'] <=> $a['score'];
     });
-
     return $interests;
     $result = [];
 
@@ -180,6 +172,5 @@ foreach ($scores as $interest => $score) {
         $result[] = $interest;
     }
 }
-
 return $result;
 }
