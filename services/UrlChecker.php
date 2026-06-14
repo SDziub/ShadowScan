@@ -27,8 +27,8 @@ function checkUrl(string $url): array
             $code === 404 => false,
             $code >= 200 && $code < 300 => true,
             $code >= 300 && $code < 400 => true,
-            $code === 429 => null, // rate limit (unknown)
-            $code === 403 => null, // blocked
+            $code === 429 => null,
+            $code === 403 => null,
             default => false
         }
     ];
@@ -64,8 +64,7 @@ function redditExists(string $url): bool
         }
     }
 
-    if (str_contains($html, "user-icon") === false &&
-        str_contains($html, "profile") === false) {
+    if (str_contains($html, "user-icon") === false && str_contains($html, "profile") === false) {
         return false;
     }
 

@@ -181,4 +181,3 @@ function checkTwitch(string $url): array
         "status" => $status
     ];
 }
-

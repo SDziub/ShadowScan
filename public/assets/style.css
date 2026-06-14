@@ -242,7 +242,6 @@ button:hover {
     0%, 50% {
         border-color: var(--text-colour);
     }
-
     51%, 100% {
         border-color: transparent;
     }
@@ -252,23 +251,18 @@ button:hover {
     0% {
         transform: translate(0,0);
     }
-
     20% {
         transform: translate(-2%,1%);
     }
-
     40% {
         transform: translate(1%,-2%);
     }
-
     60% {
         transform: translate(-1%,2%);
     }
-
     80% {
         transform: translate(2%,-1%);
     }
-
     100% {
         transform: translate(0,0);
     }
@@ -305,7 +299,7 @@ button:hover {
     position: absolute;
     top: 0;
     left: 0;
-    animation: scanMove 1.2s linear infinite;
+    animation: scanMove 0.8s linear infinite;
     box-shadow: 0 0 10px #00ff9d;
 }
 
@@ -328,5 +322,5 @@ button:hover {
     height: 100%;
     width: 0%;
     background: #00ff9d;
-    transition: width 0.2s linear;
+    transition: width 0.1s linear;
 }

@@ -259,15 +259,6 @@ $security = calculateSecurityStatus(
                 </div>
 
                 <div class="card-tooltip">
-
-                    <p>
-                        <?= htmlspecialchars(
-                            $security['profiling']['message'],
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>
-                    </p>
-
                     <?php if (
                         !empty($security['profiling']['interests'])
                     ): ?>
@@ -412,7 +403,7 @@ $security = calculateSecurityStatus(
     </section>
 
 
-    <section class="right-panel">
+ <section class="right-panel">
 
         <div class="content">
 

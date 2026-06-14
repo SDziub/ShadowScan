@@ -50,7 +50,7 @@ function calculateSecurityStatus(
         array_filter(
             $accountsResult,
             function (array $account): bool {
-                return ($account['exists'] ?? null) === true;
+                return $account['exists'] ?? false;
             }
         )
     );
@@ -121,18 +121,13 @@ function calculateSecurityStatus(
     if ($interestCount === 0) {
         $profilingStatus = 'Bezpieczny';
         $profilingLevel = 1;
-        $profilingMessage =
-            'Na podstawie nicku i adresu e-mail nie wykryto jednoznacznych zainteresowań.';
+
     } elseif ($interestCount <= 2) {
         $profilingStatus = 'Umiarkowany';
         $profilingLevel = 2;
-        $profilingMessage =
-            'Podane dane ujawniają część możliwych zainteresowań użytkownika.';
     } else {
         $profilingStatus = 'Zagrożony';
         $profilingLevel = 3;
-        $profilingMessage =
-            'Na podstawie podanych danych można zbudować wyraźniejszy profil zainteresowań użytkownika.';
     }
 
     /*
@@ -247,7 +242,6 @@ function calculateSecurityStatus(
         'profiling' => [
             'status' => $profilingStatus,
             'level' => $profilingLevel,
-            'message' => $profilingMessage,
             'count' => $interestCount,
             'interests' => $interests
         ],
