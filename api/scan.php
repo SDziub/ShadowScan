@@ -41,27 +41,27 @@ try {
     if (function_exists('analyzeDigitalFootprint')) {
         $footprintResult = analyzeDigitalFootprint($email, $username);
     }
-$risk = 0;
+    $risk = 0;
 
-if (function_exists('calculateRisk')) {
-    $risk = calculateRisk(
-        $emailResult ?? [],
-        $accountsResult ?? [],
-        $interests ?? []
-    );
-}
-    $response = [
-        "success" => true,
-        "email" => $emailResult,
-        "username" => $usernameResult,
-        "footprint" => $footprintResult,
-        "risk" => $risk
-    ];
+    if (function_exists('calculateRisk')) {
+        $risk = calculateRisk(
+            $emailResult ?? [],
+            $accountsResult ?? [],
+            $interests ?? []
+        );
+    }
+        $response = [
+            "success" => true,
+            "email" => $emailResult,
+            "username" => $usernameResult,
+            "footprint" => $footprintResult,
+            "risk" => $risk
+        ];
 
-    echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 
-} catch (Throwable $e) {
+    } catch (Throwable $e) {
 
-    http_response_code(400);
-    echo json_encode(["success" => false, "error" => $e->getMessage()], JSON_UNESCAPED_UNICODE);
-}
+        http_response_code(400);
+        echo json_encode(["success" => false, "error" => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    }
