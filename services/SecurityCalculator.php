@@ -5,13 +5,9 @@ function getSensitiveLeakInformation(array $breaches): array
     $sensitiveKeywords = [
         'password',
         'passwords',
-        'password hash',
-        'hashed password',
         'hash',
         'phone',
-        'phone number',
         'address',
-        'physical address',
         'credit card',
         'bank account',
         'date of birth',
@@ -59,154 +55,180 @@ function calculateSecurityStatus(
         )
     );
 
-    $similarAccountsCount = $foundAccounts;
-
     $interestCount = count($interests);
+
+    $identitySignals = $identityExposure['signals'] ?? [];
+    $identitySignalCount = count($identitySignals);
+    $identityScore = $identityExposure['score'] ?? 0;
+
+    /*
+     * 1. WYCIEKI DANYCH
+     */
 
     if (!$scanSuccess) {
         $breachStatus = 'Nieznany';
         $breachLevel = 0;
-        $breachMessage = 'Nie udało się sprawdzić danych w bazie LeakCheck.';
+        $breachMessage =
+            'Nie udało się połączyć z bazą LeakCheck. Wynik nie może zostać potwierdzony.';
     } elseif ($breachCount === 0) {
         $breachStatus = 'Bezpieczny';
         $breachLevel = 1;
-        $breachMessage = 'Nie znaleziono adresu e-mail w danych zwróconych przez LeakCheck.';
+        $breachMessage =
+            'Nie znaleziono podanego adresu e-mail w danych zwróconych przez LeakCheck.';
     } elseif ($breachCount === 1 && !$hasSensitiveLeak) {
-        $breachStatus = 'Wymaga uwagi';
+        $breachStatus = 'Umiarkowany';
         $breachLevel = 2;
-        $breachMessage = 'Adres e-mail występuje w jednym znanym wycieku.';
-    } elseif ($breachCount <= 3 && !$hasSensitiveLeak) {
+        $breachMessage =
+            'Adres e-mail występuje w jednym wycieku, ale nie wykryto ujawnienia szczególnie wrażliwych danych.';
+    } else {
         $breachStatus = 'Zagrożony';
         $breachLevel = 3;
-        $breachMessage = 'Adres e-mail występuje w kilku znanych wyciekach.';
-    } else {
-        $breachStatus = 'Krytyczny';
-        $breachLevel = 4;
-        $breachMessage = 'Wykryto wiele wycieków lub ujawnienie wrażliwych danych.';
+
+        if ($hasSensitiveLeak) {
+            $breachMessage =
+                'W wykrytych wyciekach mogły zostać ujawnione wrażliwe dane, takie jak hasło, telefon, adres lub adres IP.';
+        } else {
+            $breachMessage =
+                'Adres e-mail występuje w kilku publicznie znanych wyciekach danych.';
+        }
     }
+
+    /*
+     * 2. WIDOCZNOŚĆ CYFROWA
+     */
 
     if ($foundAccounts === 0) {
-        $visibilityStatus = 'Niska';
+        $visibilityStatus = 'Bezpieczny';
         $visibilityLevel = 1;
+        $visibilityMessage =
+            'Nie znaleziono publicznych profili powiązanych z podanym nickiem lub adresem e-mail.';
     } elseif ($foundAccounts <= 2) {
-        $visibilityStatus = 'Umiarkowana';
+        $visibilityStatus = 'Umiarkowany';
         $visibilityLevel = 2;
-    } elseif ($foundAccounts <= 4) {
-        $visibilityStatus = 'Wysoka';
-        $visibilityLevel = 3;
+        $visibilityMessage =
+            'Znaleziono niewielką liczbę profili. Powiązanie aktywności użytkownika jest możliwe, ale ograniczone.';
     } else {
-        $visibilityStatus = 'Bardzo wysoka';
-        $visibilityLevel = 4;
+        $visibilityStatus = 'Zagrożony';
+        $visibilityLevel = 3;
+        $visibilityMessage =
+            'Ten sam nick lub część adresu e-mail występuje na wielu platformach, co ułatwia powiązanie kont.';
     }
+
+    /*
+     * 3. MOŻLIWOŚĆ PROFILOWANIA
+     */
 
     if ($interestCount === 0) {
-        $profilingStatus = 'Niska';
+        $profilingStatus = 'Bezpieczny';
         $profilingLevel = 1;
+        $profilingMessage =
+            'Na podstawie nicku i adresu e-mail nie wykryto jednoznacznych zainteresowań.';
     } elseif ($interestCount <= 2) {
-        $profilingStatus = 'Umiarkowana';
+        $profilingStatus = 'Umiarkowany';
         $profilingLevel = 2;
+        $profilingMessage =
+            'Podane dane ujawniają część możliwych zainteresowań użytkownika.';
     } else {
-        $profilingStatus = 'Wysoka';
+        $profilingStatus = 'Zagrożony';
         $profilingLevel = 3;
+        $profilingMessage =
+            'Na podstawie podanych danych można zbudować wyraźniejszy profil zainteresowań użytkownika.';
     }
 
-    if ($breachLevel === 4) {
-        $mainStatus = 'KRYTYCZNY';
-        $mainLevel = 4;
-        $mainMessage = 'Adres e-mail występuje w wielu wyciekach lub ujawniono wrażliwe dane.';
-    } elseif ($breachLevel === 3) {
+    /*
+     * 4. EKSPOZYCJA TOŻSAMOŚCI
+     */
+
+    if ($identitySignalCount === 0) {
+        $identityStatus = 'Bezpieczny';
+        $identityLevel = 1;
+        $identityMessage =
+            'Nick i adres e-mail nie zawierają oczywistych wskazówek dotyczących tożsamości.';
+    } elseif ($identitySignalCount === 1 && $identityScore <= 3) {
+        $identityStatus = 'Umiarkowany';
+        $identityLevel = 2;
+        $identityMessage =
+            'Wykryto pojedynczą informację, która może sugerować zainteresowanie lub zawód';
+    } else {
+        $identityStatus = 'Zagrożony';
+        $identityLevel = 3;
+        $identityMessage =
+            'Podane dane zawierają kilka wskazówek mogących ułatwić identyfikację użytkownika.';
+    }
+
+    /*
+     * 5. STATUS GŁÓWNY
+     */
+
+    $highestLevel = max(
+        $breachLevel,
+        $visibilityLevel,
+        $profilingLevel,
+        $identityLevel
+    );
+
+    if ($breachLevel === 3) {
         $mainStatus = 'ZAGROŻONY';
         $mainLevel = 3;
-        $mainMessage = 'Adres e-mail występuje w publicznych bazach wycieków.';
-    } elseif (
-        $breachLevel === 2 ||
-        $visibilityLevel >= 3 ||
-        $profilingLevel >= 3 ||
-        ($identityExposure['level'] ?? 1) >= 3
-    ) {
+        $mainMessage =
+            'Adres e-mail występuje w publicznych bazach wycieków lub ujawniono wrażliwe dane.';
+    } elseif ($highestLevel === 3) {
+        $mainStatus = 'ZAGROŻONY';
+        $mainLevel = 3;
+        $mainMessage =
+            'Nie wykryto krytycznego wycieku, ale podane dane powodują wysoki poziom ekspozycji lub profilowania.';
+    } elseif ($highestLevel === 2) {
         $mainStatus = 'UMIARKOWANY';
         $mainLevel = 2;
-        $mainMessage = 'Wykryto sygnały zwiększające widoczność lub możliwość profilowania.';
-    } elseif ($breachLevel === 0) {
-        $mainStatus = 'NIEZNANY';
-        $mainLevel = 0;
-        $mainMessage = 'Nie udało się ukończyć sprawdzania wycieków danych.';
+        $mainMessage =
+            'Wykryto sygnały zwiększające widoczność, możliwość profilowania lub identyfikację użytkownika.';
     } else {
         $mainStatus = 'BEZPIECZNY';
         $mainLevel = 1;
-        $mainMessage = 'Nie znaleziono znanych wycieków i wykryto niski poziom ekspozycji.';
+        $mainMessage =
+            'Nie wykryto znanych wycieków ani istotnych sygnałów zwiększonej ekspozycji.';
     }
+
+    /*
+     * 6. REKOMENDACJE
+     */
 
     $recommendations = [];
 
-    if ($breachCount > 0) {
-        $recommendations[] = 'Zmień hasło w serwisach powiązanych z tym adresem e-mail.';
-        $recommendations[] = 'Nie używaj tego samego hasła w wielu serwisach.';
-        $recommendations[] = 'Włącz uwierzytelnianie dwuskładnikowe.';
+    if ($breachLevel >= 2) {
+        $recommendations[] =
+            'Zmień hasło w serwisach powiązanych z tym adresem e-mail.';
+        $recommendations[] =
+            'Włącz uwierzytelnianie dwuskładnikowe.';
     }
 
-    if ($hasSensitiveLeak) {
-        $recommendations[] = 'Sprawdź, jakie dokładnie dane zostały ujawnione.';
+    if ($visibilityLevel === 3) {
+        $recommendations[] =
+            'Rozważ stosowanie różnych nazw użytkownika na różnych platformach.';
     }
 
-    if ($foundAccounts >= 3) {
-        $recommendations[] = 'Rozważ używanie różnych nazw użytkownika w różnych serwisach.';
+    if ($profilingLevel >= 2) {
+        $recommendations[] =
+            'Unikaj umieszczania zainteresowań bezpośrednio w nicku lub adresie e-mail.';
     }
 
-    if ($interestCount >= 2) {
-        $recommendations[] = 'Nick i e-mail ujawniają informacje przydatne do profilowania.';
-    }
-
-    if (($identityExposure['level'] ?? 1) >= 3) {
-        $recommendations[] = 'Usuń z nicku lub e-maila rok, lokalizację albo dane osobowe.';
+    if ($identityLevel >= 2) {
+        $recommendations[] =
+            'Usuń z nicku lub e-maila rok, lokalizację albo inne informacje osobiste.';
     }
 
     if (empty($recommendations)) {
-        $recommendations[] = 'Kontynuuj stosowanie różnych haseł i uwierzytelniania dwuskładnikowego.';
+        $recommendations[] =
+            'Kontynuuj stosowanie różnych haseł oraz uwierzytelniania dwuskładnikowego.';
     }
 
-    $identityLevel = $identityExposure['level'] ?? 1;
-
-$combinedLevel = max(
-    $profilingLevel,
-    $identityLevel
-);
-
-$combinedStatus = match ($combinedLevel) {
-    1 => 'Niska',
-    2 => 'Umiarkowana',
-    3 => 'Podwyższona',
-    default => 'Wysoka'
-};
-
     return [
-        'similarAccounts' => [
-    'status' => $foundAccounts === 0
-        ? 'Brak'
-        : ($foundAccounts <= 2
-            ? 'Kilka'
-            : ($foundAccounts <= 5
-                ? 'Wiele'
-                : 'Bardzo wiele')),
-    'level' => min(
-        max($foundAccounts, 1),
-        4
-    ),
-    'count' => $foundAccounts
-],
-        'profilingExposure' => [
-    'status' => $combinedStatus,
-    'level' => $combinedLevel,
-    'interestsCount' => $interestCount,
-    'signalsCount' => count(
-        $identityExposure['signals'] ?? []
-    )
-],
         'main' => [
             'status' => $mainStatus,
             'level' => $mainLevel,
             'message' => $mainMessage
         ],
+
         'breaches' => [
             'status' => $breachStatus,
             'level' => $breachLevel,
@@ -214,17 +236,32 @@ $combinedStatus = match ($combinedLevel) {
             'count' => $breachCount,
             'sensitiveFields' => $sensitiveFields
         ],
+
         'visibility' => [
             'status' => $visibilityStatus,
             'level' => $visibilityLevel,
+            'message' => $visibilityMessage,
             'count' => $foundAccounts
         ],
+
         'profiling' => [
             'status' => $profilingStatus,
             'level' => $profilingLevel,
-            'count' => $interestCount
+            'message' => $profilingMessage,
+            'count' => $interestCount,
+            'interests' => $interests
         ],
-        'identityExposure' => $identityExposure,
-        'recommendations' => array_values(array_unique($recommendations))
+
+        'identityExposure' => [
+            'status' => $identityStatus,
+            'level' => $identityLevel,
+            'message' => $identityMessage,
+            'count' => $identitySignalCount,
+            'signals' => $identitySignals
+        ],
+
+        'recommendations' => array_values(
+            array_unique($recommendations)
+        )
     ];
 }

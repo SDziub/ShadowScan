@@ -13,10 +13,6 @@ function analyzeIdentityExposure(
 
     $signals = [];
 
-    /*
-     * Rok mogący sugerować datę urodzenia.
-     * Ograniczamy zakres, aby nie uznawać każdej liczby za rok.
-     */
     if (preg_match('/(?:19[5-9][0-9]|20[0-1][0-9])/', $combined)) {
         $signals[] = [
             'type' => 'birth_year',
@@ -25,9 +21,6 @@ function analyzeIdentityExposure(
         ];
     }
 
-    /*
-     * Schemat imię.nazwisko albo imię_nazwisko.
-     */
     if (
         preg_match(
             '/^[a-ząćęłńóśźż]{3,}[._-][a-ząćęłńóśźż]{3,}$/u',
@@ -42,17 +35,9 @@ function analyzeIdentityExposure(
     }
 
     $locations = [
-        'lodz',
-        'łódź',
-        'warszawa',
-        'krakow',
-        'kraków',
-        'wroclaw',
-        'wrocław',
-        'poznan',
-        'poznań',
-        'gdansk',
-        'gdańsk'
+        'lodz', 'łódź', 'warszawa', 'krakow', 'kraków',
+        'wroclaw', 'wrocław', 'poznan', 'poznań',
+        'gdansk', 'gdańsk'
     ];
 
     foreach ($locations as $location) {
@@ -68,14 +53,8 @@ function analyzeIdentityExposure(
     }
 
     $occupationKeywords = [
-        'dev',
-        'developer',
-        'programmer',
-        'student',
-        'teacher',
-        'doctor',
-        'designer',
-        'admin'
+        'dev', 'developer', 'programmer', 'student',
+        'teacher', 'doctor', 'designer', 'admin'
     ];
 
     foreach ($occupationKeywords as $keyword) {
@@ -91,15 +70,8 @@ function analyzeIdentityExposure(
     }
 
     $interestKeywords = [
-        'gamer',
-        'gaming',
-        'fit',
-        'gym',
-        'music',
-        'dj',
-        'crypto',
-        'photo',
-        'travel'
+        'gamer', 'gaming', 'fit', 'gym', 'music',
+        'dj', 'crypto', 'photo', 'travel'
     ];
 
     foreach ($interestKeywords as $keyword) {

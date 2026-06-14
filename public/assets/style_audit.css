@@ -14,13 +14,19 @@
     --card-background: rgba(255, 255, 255, 0.025);
     --tooltip-background: #001b23;
 }
+
+/* =========================
+   USTAWIENIA OGÓLNE
+   ========================= */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     width: 100%;
     height: 100%;
 }
@@ -38,7 +44,12 @@ body::before {
     content: "";
     position: fixed;
     inset: -100%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.20) 1px, transparent 1px);
+    background:
+        radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.20) 1px,
+            transparent 1px
+        );
     background-size: 4px 4px;
     opacity: 0.55;
     pointer-events: none;
@@ -69,7 +80,10 @@ body::after {
     display: flex;
     width: 100%;
     height: 100vh;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.2), 0 0 8px rgba(255, 255, 255, 0.05);
+
+    text-shadow:
+        0 0 2px rgba(255, 255, 255, 0.2),
+        0 0 8px rgba(255, 255, 255, 0.05);
 }
 
 a {
@@ -84,17 +98,28 @@ a:hover {
     text-shadow: 0 0 10px rgba(0, 255, 157, 0.7);
 }
 
+/* =========================
+   LEWY PANEL
+   ========================= */
+
 .left-panel {
     flex: 1;
     min-width: 0;
     height: 100vh;
+
     padding: 26px 32px;
+
     border-right: 1px solid var(--left-colour);
+
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow: hidden;
+
+    overflow-y: auto;
+    overflow-x: hidden;
 }
+
+/* Nagłówek raportu */
 
 .report-header {
     flex-shrink: 0;
@@ -110,30 +135,48 @@ a:hover {
     font-size: 0.95rem;
 }
 
+/* Animowany tytuł */
+
 .typing-title {
     display: inline-block;
+
     color: var(--h1-colour);
     font-size: 2rem;
     line-height: 1.25;
     font-weight: 700;
+
     width: 0;
     overflow: hidden;
     white-space: nowrap;
+
     border-right: 3px solid var(--text-colour);
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
-    animation: typing-title 1.5s steps(13) forwards, blink-cursor 0.8s infinite;
+
+    text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.15);
+
+    animation:
+        typing-title 1.5s steps(13) forwards,
+        blink-cursor 0.8s infinite;
 }
+
+/* =========================
+   GŁÓWNY STATUS
+   ========================= */
 
 .main-security-status {
     flex-shrink: 0;
+
     padding: 17px 20px;
+
     border: 1px solid var(--border-colour);
     background: var(--card-background);
 }
 
 .main-security-status .status-label {
     color: var(--note-colour);
+
     margin-bottom: 7px;
+
     font-size: 0.87rem;
     letter-spacing: 0.4px;
 }
@@ -141,7 +184,9 @@ a:hover {
 .main-security-status h2 {
     margin: 0 0 8px;
     padding: 0;
+
     border: none;
+
     font-size: 1.75rem;
     line-height: 1.1;
 }
@@ -152,91 +197,159 @@ a:hover {
 
 .main-security-status .main-status-message {
     margin: 0;
+
     color: var(--text-colour);
+
     font-size: 0.9rem;
     line-height: 1.35;
 }
 
+/* =========================
+   SIATKA STATYSTYK
+   ========================= */
+
 .security-grid {
     flex-shrink: 0;
+
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: repeat(2, 112px);
+
     gap: 11px;
 }
 
+/* Pojedynczy kafelek */
+
 .security-card {
     position: relative;
+
     min-width: 0;
     height: 112px;
+
     padding: 14px 16px;
+
     border: 1px solid var(--border-colour);
     background: var(--card-background);
+
     overflow: hidden;
-    cursor: help;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s,
+        border-color 0.2s;
 }
 
-.security-card:hover, .security-card:focus, .security-card:focus-within {
+.security-card:hover,
+.security-card:focus,
+.security-card:focus-within {
     transform: translateY(-2px);
+
     border-color: currentColor;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28), 0 0 12px rgba(255, 255, 255, 0.05);
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.28),
+        0 0 12px rgba(255, 255, 255, 0.05);
+
     outline: none;
 }
 
 .security-card h3 {
     margin: 0 0 7px;
+
     font-size: 0.92rem;
     line-height: 1.15;
 }
 
 .security-card strong {
     display: block;
+
     margin-bottom: 10px;
+
     font-size: 1.08rem;
     line-height: 1.15;
 }
 
+/* Pasek statusu */
+
 .status-bar {
     width: 100%;
     height: 7px;
+
     border: 1px solid var(--border-colour);
+
     overflow: hidden;
 }
 
 .status-bar span {
     display: block;
+
     height: 100%;
+
     background: currentColor;
+
     transition: width 0.4s ease;
 }
+
+/* =========================
+   SZCZEGÓŁY PO NAJECHANIU
+   ========================= */
+
+/*
+   Tooltip przykrywa zawartość kafelka.
+   Dzięki temu nie wychodzi poza lewy panel.
+*/
 
 .card-tooltip {
     position: absolute;
     inset: 0;
     z-index: 5;
+
     display: flex;
     flex-direction: column;
     justify-content: center;
+
     padding: 13px 15px;
+
     background: var(--tooltip-background);
     color: var(--text-colour);
+
     opacity: 0;
     visibility: hidden;
+
     transform: scale(0.97);
-    transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+
+    transition:
+        opacity 0.18s ease,
+        visibility 0.18s ease,
+        transform 0.18s ease;
+
     pointer-events: none;
 }
 
-.security-card:hover .card-tooltip, .security-card:focus .card-tooltip, .security-card:focus-within .card-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
+.security-card::after {
+    content: "szczegóły";
+    position: absolute;
+    right: 10px;
+    bottom: 7px;
+
+    color: var(--note-colour);
+
+    font-size: 0.58rem;
+    opacity: 0.65;
+}
+
+.security-card:hover::after,
+.security-card.is-open::after,
+.security-card:focus::after {
+    display: none;
 }
 
 .card-tooltip p {
     margin: 0 0 5px;
+
     color: var(--text-colour);
+
     font-size: 0.75rem;
     line-height: 1.3;
 }
@@ -252,39 +365,59 @@ a:hover {
 
 .card-tooltip li {
     margin-bottom: 2px;
+
     color: var(--text-colour);
+
     font-size: 0.7rem;
     line-height: 1.25;
 }
 
-.security-card[data-level="0"], .main-security-status[data-level="0"] {
+/* =========================
+   KOLORY POZIOMÓW
+   ========================= */
+
+.security-card[data-level="0"],
+.main-security-status[data-level="0"] {
     color: #90a4ae;
 }
 
-.security-card[data-level="1"], .main-security-status[data-level="1"] {
+.security-card[data-level="1"],
+.main-security-status[data-level="1"] {
     color: #00d68f;
 }
 
-.security-card[data-level="2"], .main-security-status[data-level="2"] {
+.security-card[data-level="2"],
+.main-security-status[data-level="2"] {
     color: #f4c95d;
 }
 
-.security-card[data-level="3"], .main-security-status[data-level="3"] {
-    color: #ff8a3d;
-}
-
-.security-card[data-level="4"], .main-security-status[data-level="4"] {
+.security-card[data-level="3"],
+.main-security-status[data-level="3"] {
     color: #ff4d5a;
 }
 
-.main-security-status p, .security-card p {
+/* Tekst opisu pozostaje jasny */
+
+.main-security-status p,
+.security-card p {
     color: var(--text-colour);
 }
 
+/* =========================
+   REKOMENDACJE NA DOLE
+   ========================= */
+
 .recommendations {
+    /*
+       Spycha rekomendacje na dół,
+       jeśli wyżej pozostaje wolna przestrzeń.
+    */
     margin-top: auto;
+
     flex-shrink: 0;
+
     padding: 14px 18px;
+
     border: 1px solid var(--border-colour);
     background: var(--card-background);
 }
@@ -292,8 +425,11 @@ a:hover {
 .recommendations h2 {
     margin: 0 0 7px;
     padding: 0;
+
     border: none;
+
     color: var(--h1-colour);
+
     font-size: 1.15rem;
 }
 
@@ -308,7 +444,9 @@ a:hover {
 
 .recommendations li {
     margin-bottom: 4px;
+
     color: var(--text-colour);
+
     font-size: 0.78rem;
     line-height: 1.25;
 }
@@ -317,15 +455,23 @@ a:hover {
     margin-bottom: 0;
 }
 
+/* =========================
+   PRAWY PANEL
+   ========================= */
+
 .right-panel {
     flex: 1;
     min-width: 0;
     height: 100vh;
+
     padding: 40px;
+
     background: var(--right-background);
+
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+
     overflow-x: hidden;
     overflow-y: auto;
 }
@@ -337,35 +483,53 @@ a:hover {
 
 .typing-heading {
     display: inline-block;
+
     color: var(--h1-colour);
+
     font-size: 2.8rem;
     font-weight: 700;
+
     width: 0;
     overflow: hidden;
     white-space: nowrap;
+
     border-right: 3px solid var(--text-colour);
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.12);
-    animation: typing-heading 2s steps(31) 0.2s forwards, blink-cursor 0.8s infinite;
+
+    text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.12);
+
+    animation:
+        typing-heading 2s steps(31) 0.2s forwards,
+        blink-cursor 0.8s infinite;
+
     margin-bottom: 40px;
 }
 
-#auditResults, .profiles-grid {
+#auditResults,
+.profiles-grid {
     display: grid;
+
     grid-template-columns: repeat(2, minmax(0, 1fr));
+
     gap: 15px;
+
     margin-top: 20px;
 }
 
 .profile-item {
     position: relative;
+
     min-height: 145px;
+
     padding: 18px;
+
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.03);
 }
 
 .profile-item strong {
     display: block;
+
     margin-bottom: 8px;
 }
 
@@ -385,20 +549,30 @@ a:hover {
 
 #auditLoading {
     padding: 20px;
+
     border: 1px solid rgba(255, 255, 255, 0.15);
+
     margin-top: 20px;
+
     text-align: center;
     font-size: 1rem;
+
     color: #00ff9d;
+
     animation: pulse 1s infinite;
 }
+
+/* =========================
+   ANIMACJE
+   ========================= */
 
 @keyframes typing-title {
     from {
         width: 0;
     }
+
     to {
-        width: 10.5ch;
+        width: 13ch;
     }
 }
 
@@ -406,16 +580,20 @@ a:hover {
     from {
         width: 0;
     }
+
     to {
-        width: 17ch;
+        width: 34ch;
     }
 }
 
 @keyframes blink-cursor {
-    0%, 50% {
+    0%,
+    50% {
         border-color: var(--text-colour);
     }
-    51%, 100% {
+
+    51%,
+    100% {
         border-color: transparent;
     }
 }
@@ -424,18 +602,23 @@ a:hover {
     0% {
         transform: translate(0, 0);
     }
+
     20% {
         transform: translate(-2%, 1%);
     }
+
     40% {
         transform: translate(1%, -2%);
     }
+
     60% {
         transform: translate(-1%, 2%);
     }
+
     80% {
         transform: translate(2%, -1%);
     }
+
     100% {
         transform: translate(0, 0);
     }
@@ -445,13 +628,19 @@ a:hover {
     0% {
         opacity: 0.3;
     }
+
     50% {
         opacity: 1;
     }
+
     100% {
         opacity: 0.3;
     }
 }
+
+/* =========================
+   MNIEJSZE EKRANY
+   ========================= */
 
 @media (max-width: 1150px) {
     .left-panel {
@@ -499,7 +688,8 @@ a:hover {
         flex-direction: column;
     }
 
-    .left-panel, .right-panel {
+    .left-panel,
+    .right-panel {
         width: 100%;
         height: auto;
         overflow: visible;
@@ -510,10 +700,91 @@ a:hover {
     }
 
     .security-grid {
-        grid-template-rows: repeat(2, 115px);
-    }
+    flex-shrink: 0;
 
-    #auditResults, .profiles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(112px, auto);
+
+    gap: 11px;
+    align-items: start;
+}
+
+    #auditResults,
+    .profiles-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/*
+   Kafelek rozszerza się:
+   - po najechaniu kursorem,
+   - po kliknięciu, gdy otrzyma klasę is-open,
+   - po wybraniu klawiaturą.
+*/
+
+.security-card:hover,
+.security-card.is-open,
+.security-card:focus {
+    height: auto;
+    min-height: 112px;
+
+    overflow: visible;
+    z-index: 10;
+
+    border-color: currentColor;
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.28),
+        0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+/*
+   Po otwarciu chowamy:
+   - nazwę kategorii,
+   - status,
+   - pasek.
+
+   W ich miejscu pojawia się opis szczegółowy.
+*/
+
+.security-card:hover > h3,
+.security-card:hover > strong,
+.security-card:hover > .status-bar,
+.security-card.is-open > h3,
+.security-card.is-open > strong,
+.security-card.is-open > .status-bar,
+.security-card:focus > h3,
+.security-card:focus > strong,
+.security-card:focus > .status-bar {
+    display: none;
+}
+
+/*
+   Tooltip przestaje być absolutną nakładką.
+   Staje się zwykłą zawartością kafelka,
+   więc kafelek może zwiększyć wysokość.
+*/
+
+.security-card:hover .card-tooltip,
+.security-card.is-open .card-tooltip,
+.security-card:focus .card-tooltip {
+    position: relative;
+    inset: auto;
+
+    display: block;
+
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+
+    width: 100%;
+    height: auto;
+
+    margin: 0;
+    padding: 2px;
+
+    background: transparent;
+
+    pointer-events: auto;
 }

@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 require_once "path.php";
 
@@ -16,8 +17,6 @@ if (
 
 require_once ROOT_PATH . "services/EmailScanner.php";
 require_once ROOT_PATH . "services/AccountScanner.php";
-require_once ROOT_PATH . "services/FootprintScanner.php";
-require_once ROOT_PATH . "services/UrlChecker.php";
 require_once ROOT_PATH . "services/InterestProfiler.php";
 require_once ROOT_PATH . "services/IdentityExposureScanner.php";
 require_once ROOT_PATH . "services/SecurityCalculator.php";
@@ -50,323 +49,471 @@ $security = calculateSecurityStatus(
 
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <?php require_once ROOT_PATH . "public/includes/head_audit.php"; ?>
+
     <title>Raport - ShadowScan</title>
 </head>
+
 <body>
 
 <div class="container">
 
-<section class="left-panel">
+    <section class="left-panel">
 
-    <div class="report-header">
-        <h1 class="typing-title">Raport audytu</h1>
-        <p>Email: <?= htmlspecialchars($email) ?></p>
-        <p>Nick: <?= htmlspecialchars($username) ?></p>
-    </div>
+        <div class="report-header">
 
-    <div
-        class="main-security-status"
-        data-level="<?= (int) $security['main']['level'] ?>"
-    >
-        <p class="status-label">Stan bezpieczeństwa danych</p>
+            <h1 class="typing-title">
+                Raport audytu
+            </h1>
 
-        <h2>
-            <?= htmlspecialchars($security['main']['status']) ?>
-        </h2>
+            <p>
+                Email:
+                <?= htmlspecialchars(
+                    $email,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </p>
 
-        <p class="main-status-message">
-            <?= htmlspecialchars($security['main']['message']) ?>
-        </p>
-    </div>
+            <p>
+                Nick:
+                <?= htmlspecialchars(
+                    $username,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </p>
 
-    <div class="security-grid">
-
-        <article
-            class="security-card"
-            data-level="<?= (int) $security['breaches']['level'] ?>"
-            tabindex="0"
-        >
-            <h3>Wycieki danych</h3>
-
-            <strong>
-                <?= htmlspecialchars($security['breaches']['status']) ?>
-            </strong>
-
-            <div class="status-bar">
-                <span style="width: <?= (int) $security['breaches']['level'] * 25 ?>%"></span>
-            </div>
-
-            <div class="card-tooltip">
-                <p>
-                    Znalezione wycieki:
-                    <?= (int) $security['breaches']['count'] ?>
-                </p>
-
-                <p>
-                    <?= htmlspecialchars($security['breaches']['message']) ?>
-                </p>
-
-                <?php if (!empty($security['breaches']['sensitiveFields'])): ?>
-                    <p>
-                        Wrażliwe dane:
-                        <?= htmlspecialchars(
-                            implode(', ', $security['breaches']['sensitiveFields'])
-                        ) ?>
-                    </p>
-                <?php endif; ?>
-            </div>
-        </article>
-
-
-        <article
-            class="security-card"
-            data-level="<?= (int) $security['visibility']['level'] ?>"
-            tabindex="0"
-        >
-            <h3>Widoczność cyfrowa</h3>
-
-            <strong>
-                <?= htmlspecialchars($security['visibility']['status']) ?>
-            </strong>
-
-            <div class="status-bar">
-                <span style="width: <?= (int) $security['visibility']['level'] * 25 ?>%"></span>
-            </div>
-
-            <div class="card-tooltip">
-                <p>
-                    Powiązane profile:
-                    <?= (int) $security['visibility']['count'] ?>
-                </p>
-
-                <p>
-                    Im więcej kont znalezionych po nicku i e-mailu,
-                    tym łatwiej powiązać Twoją aktywność online.
-                </p>
-            </div>
-        </article>
-
-        <article
-    class="security-card"
-    data-level="<?= (int) $security['profilingExposure']['level'] ?>"
-    tabindex="0"
->
-    <h3>Profilowanie i identyfikacja</h3>
-
-    <strong>
-        <?= htmlspecialchars(
-            $security['profilingExposure']['status']
-        ) ?>
-    </strong>
-
-    <div class="status-bar">
-        <span
-            style="width:
-            <?= (int) $security['profilingExposure']['level'] * 25 ?>%"
-        ></span>
-    </div>
-
-    <div class="card-tooltip">
-
-        <p>
-            Zainteresowania:
-            <?= (int) $security['profilingExposure']['interestsCount'] ?>
-        </p>
-
-        <p>
-            Sygnały identyfikacyjne:
-            <?= (int) $security['profilingExposure']['signalsCount'] ?>
-        </p>
-
-    </div>
-</article>
-
-<article
-    class="security-card"
-    data-level="<?= (int) $security['similarAccounts']['level'] ?>"
-    tabindex="0"
->
-    <h3>Podobne konta</h3>
-
-    <strong>
-        <?= htmlspecialchars(
-            $security['similarAccounts']['status']
-        ) ?>
-    </strong>
-
-    <div class="status-bar">
-        <span
-            style="width:
-            <?= (int) $security['similarAccounts']['level'] * 25 ?>%"
-        ></span>
-    </div>
-
-    <div class="card-tooltip">
-
-        <p>
-            Znalezione profile:
-            <?= (int) $security['similarAccounts']['count'] ?>
-        </p>
-
-        <p>
-            Im więcej podobnych kont wykorzystuje ten sam nick,
-            tym łatwiej powiązać aktywność między serwisami.
-        </p>
-
-    </div>
-</article>
-
-    </div>
-
-    <section class="recommendations">
-        <h2>Rekomendacje</h2>
-
-        <ul>
-            <?php foreach ($security['recommendations'] as $recommendation): ?>
-                <li><?= htmlspecialchars($recommendation) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    </section>
-
-</section>
-
-<section class="right-panel">
-
-    <div class="content">
-
-        <h2 class="typing-heading">
-            Gdzie znaleziono konta?
-        </h2>
-
-        <div id="auditLoading">
-            Trwa analiza...
         </div>
 
-<div id="auditResults" style="display:none;"></div>
 
-    </div>
+        <div
+            class="main-security-status"
+            data-level="<?= (int) $security['main']['level'] ?>"
+        >
 
-</section>
-</div>
-<section class="security-summary">
+            <p class="status-label">
+                Stan bezpieczeństwa danych
+            </p>
 
-    <div
-        class="main-security-status"
-        data-level="<?= (int) $security['main']['level'] ?>"
-    >
-        <p class="status-label">Stan bezpieczeństwa danych</p>
+            <h2>
+                <?= htmlspecialchars(
+                    $security['main']['status'],
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </h2>
 
-        <h2>
-            <?= htmlspecialchars($security['main']['status']) ?>
-        </h2>
+            <p class="main-status-message">
+                <?= htmlspecialchars(
+                    $security['main']['message'],
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </p>
 
-        <p>
-            <?= htmlspecialchars($security['main']['message']) ?>
-        </p>
-    </div>
+        </div>
 
-    <div class="security-grid">
 
-        <?php
-        $cards = [
-            [
-                'title' => 'Wycieki danych',
-                'data' => $security['breaches'],
-                'description' => 'Znalezione wycieki: ' . $security['breaches']['count']
-            ],
-            [
-                'title' => 'Widoczność cyfrowa',
-                'data' => $security['visibility'],
-                'description' => 'Powiązane profile: ' . $security['visibility']['count']
-            ],
-[
-    'title' => 'Profilowanie i identyfikacja',
-    'data' => $security['profilingExposure'],
-    'description' =>
-        'Zainteresowania: ' .
-        $security['profilingExposure']['interestsCount'] .
-        ', sygnały: ' .
-        $security['profilingExposure']['signalsCount']
-],
-[
-    'title' => 'Podobne konta',
-    'data' => $security['similarAccounts'],
-    'description' =>
-        'Znalezione profile: ' .
-        $security['similarAccounts']['count']
-]
-        ];
-        ?>
+        <div class="security-grid">
 
-        <?php foreach ($cards as $card): ?>
+            <!-- WYCIEKI DANYCH -->
+
             <article
                 class="security-card"
-                data-level="<?= (int) $card['data']['level'] ?>"
+                data-level="<?= (int) $security['breaches']['level'] ?>"
+                tabindex="0"
             >
-                <h3><?= htmlspecialchars($card['title']) ?></h3>
+
+                <h3>Wycieki danych</h3>
 
                 <strong>
-                    <?= htmlspecialchars($card['data']['status']) ?>
+                    <?= htmlspecialchars(
+                        $security['breaches']['status'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>
                 </strong>
 
                 <div class="status-bar">
                     <span
                         style="width:
-                        <?= (int) $card['data']['level'] * 25 ?>%"
+                        <?= (int) round(
+                            $security['breaches']['level'] / 3 * 100
+                        ) ?>%"
                     ></span>
                 </div>
 
-                <p><?= htmlspecialchars($card['description']) ?></p>
+                <div class="card-tooltip">
+
+                    <p>
+                        <?= htmlspecialchars(
+                            $security['breaches']['message'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </p>
+
+                    <p>
+                        Liczba wycieków:
+                        <?= (int) $security['breaches']['count'] ?>
+                    </p>
+
+                    <?php if (
+                        !empty($security['breaches']['sensitiveFields'])
+                    ): ?>
+
+                        <p>
+                            Ujawnione wrażliwe dane:
+                            <?= htmlspecialchars(
+                                implode(
+                                    ', ',
+                                    $security['breaches']['sensitiveFields']
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </p>
+
+                    <?php endif; ?>
+
+                </div>
+
             </article>
-        <?php endforeach; ?>
 
-    </div>
 
-</section>
+            <!-- WIDOCZNOŚĆ CYFROWA -->
+
+            <article
+                class="security-card"
+                data-level="<?= (int) $security['visibility']['level'] ?>"
+                tabindex="0"
+            >
+
+                <h3>Widoczność cyfrowa</h3>
+
+                <strong>
+                    <?= htmlspecialchars(
+                        $security['visibility']['status'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>
+                </strong>
+
+                <div class="status-bar">
+                    <span
+                        style="width:
+                        <?= (int) round(
+                            $security['visibility']['level'] / 3 * 100
+                        ) ?>%"
+                    ></span>
+                </div>
+
+                <div class="card-tooltip">
+
+                    <p>
+                        <?= htmlspecialchars(
+                            $security['visibility']['message'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </p>
+
+                    <p>
+                        Powiązane profile:
+                        <?= (int) $security['visibility']['count'] ?>
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- PROFILOWANIE -->
+
+            <article
+                class="security-card"
+                data-level="<?= (int) $security['profiling']['level'] ?>"
+                tabindex="0"
+            >
+
+                <h3>Możliwość profilowania</h3>
+
+                <strong>
+                    <?= htmlspecialchars(
+                        $security['profiling']['status'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>
+                </strong>
+
+                <div class="status-bar">
+                    <span
+                        style="width:
+                        <?= (int) round(
+                            $security['profiling']['level'] / 3 * 100
+                        ) ?>%"
+                    ></span>
+                </div>
+
+                <div class="card-tooltip">
+
+                    <p>
+                        <?= htmlspecialchars(
+                            $security['profiling']['message'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </p>
+
+                    <?php if (
+                        !empty($security['profiling']['interests'])
+                    ): ?>
+
+                        <p>Możliwe zainteresowania:</p>
+
+                        <ul>
+                            <?php foreach (
+                                $security['profiling']['interests']
+                                as $interest
+                            ): ?>
+
+                                <li>
+                                    <?= htmlspecialchars(
+                                        is_array($interest)
+                                            ? $interest['name']
+                                            : $interest,
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </li>
+
+                            <?php endforeach; ?>
+                        </ul>
+
+                    <?php else: ?>
+
+                        <p>
+                            Nie wykryto jednoznacznych zainteresowań.
+                        </p>
+
+                    <?php endif; ?>
+
+                </div>
+
+            </article>
+
+
+            <!-- EKSPOZYCJA TOŻSAMOŚCI -->
+
+            <article
+                class="security-card"
+                data-level="<?=
+                    (int) $security['identityExposure']['level']
+                ?>"
+                tabindex="0"
+            >
+
+                <h3>Ekspozycja tożsamości</h3>
+
+                <strong>
+                    <?= htmlspecialchars(
+                        $security['identityExposure']['status'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>
+                </strong>
+
+                <div class="status-bar">
+                    <span
+                        style="width:
+                        <?= (int) round(
+                            $security['identityExposure']['level']
+                            / 3
+                            * 100
+                        ) ?>%"
+                    ></span>
+                </div>
+
+                <div class="card-tooltip">
+
+                    <p>
+                        <?= htmlspecialchars(
+                            $security['identityExposure']['message'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </p>
+
+                    <?php if (
+                        !empty(
+                            $security['identityExposure']['signals']
+                        )
+                    ): ?>
+
+                        <ul>
+                            <?php foreach (
+                                $security['identityExposure']['signals']
+                                as $signal
+                            ): ?>
+
+                                <li>
+                                    <?= htmlspecialchars(
+                                        $signal['message'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </li>
+
+                            <?php endforeach; ?>
+                        </ul>
+
+                    <?php else: ?>
+
+                        <p>
+                            Nie wykryto informacji ułatwiających
+                            identyfikację.
+                        </p>
+
+                    <?php endif; ?>
+
+                </div>
+
+            </article>
+
+        </div>
+
+
+        <section class="recommendations">
+
+            <h2>Rekomendacje</h2>
+
+            <ul>
+                <?php foreach (
+                    $security['recommendations']
+                    as $recommendation
+                ): ?>
+
+                    <li>
+                        <?= htmlspecialchars(
+                            $recommendation,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </li>
+
+                <?php endforeach; ?>
+            </ul>
+
+        </section>
+
+    </section>
+
+
+    <section class="right-panel">
+
+        <div class="content">
+
+            <h2 class="typing-heading">
+                Gdzie znaleziono konta?
+            </h2>
+
+            <div class="profiles-grid">
+
+                <?php foreach ($accountsResult as $account): ?>
+
+                    <div class="profile-item">
+
+                        <strong>
+                            <?= htmlspecialchars(
+                                $account['platform'],
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </strong>
+
+                        <?php if ($account['exists']): ?>
+
+                            <p>
+                                ✓ Znaleziono
+
+                                <?php if (!empty($account['foundAs'])): ?>
+
+                                    jako:
+                                    <?= htmlspecialchars(
+                                        $account['foundAs'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+
+                                <?php endif; ?>
+                            </p>
+
+                            <?php if (!empty($account['url'])): ?>
+
+                                <a
+                                    href="<?= htmlspecialchars(
+                                        $account['url'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Otwórz profil
+                                </a>
+
+                            <?php endif; ?>
+
+                        <?php else: ?>
+
+                            <p>✗ Nie znaleziono</p>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                <?php endforeach; ?>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
 <script>
+const securityCards = document.querySelectorAll(".security-card");
 
-window.addEventListener('load', () => {
+function toggleCard(selectedCard) {
+    const wasOpen = selectedCard.classList.contains("is-open");
 
-    const loading = document.getElementById('auditLoading');
-    const results = document.getElementById('auditResults');
-
-    fetch('services/audit_data.php', {
-
-        method: 'POST',
-
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-
-        body:
-            'email=<?= urlencode($email) ?>' +
-            '&username=<?= urlencode($username) ?>'
-
-    })
-
-    .then(response => response.text())
-
-    .then(html => {
-
-        loading.style.display = 'none';
-
-        results.innerHTML = html;
-
-        results.style.display = 'block';
-
-    })
-
-    .catch(() => {
-
-        loading.innerHTML =
-            'Błąd podczas wykonywania analizy.';
-
+    securityCards.forEach((card) => {
+        card.classList.remove("is-open");
     });
 
-});
+    if (!wasOpen) {
+        selectedCard.classList.add("is-open");
+    }
+}
 
+securityCards.forEach((card) => {
+    card.addEventListener("click", () => {
+        toggleCard(card);
+    });
+
+    card.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleCard(card);
+        }
+    });
+});
 </script>
+
 </body>
 </html>
