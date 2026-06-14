@@ -71,7 +71,7 @@ document.getElementById("scanForm").addEventListener("submit", function (e) {
     overlay.classList.remove("hidden");
 
     let progress = 0;
-    const duration = 4500;
+    const duration = 2500;
     const intervalTime = 50;
     const step = 100 / (duration / intervalTime);
 
